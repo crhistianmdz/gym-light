@@ -1,0 +1,68 @@
+# .gitignore for GymFlow Lite
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.psess
+.vs/
+_ReSharper*
+*.log
+Debug/
+Release/
+publish/
+*.profdata
+*cs.proj.*.tmp
+
+# React + Vite
+node_modules/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.iml
+debug.log
+*.code-workspace
+*.sln.docstates
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.nfs*
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Docker
+docker-compose.override.yml
+
+# Redis
+*.rdb
+*.dump
+*.aof
+
+# Coverage
+coverage/
+*.lcov
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
