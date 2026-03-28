@@ -15,12 +15,58 @@
     1. El campo "Foto" es obligatorio para habilitar el botón de guardado.
     2. El frontend debe comprimir la imagen a WebP antes de enviarla o cachearla.
 
-### HU-03: Venta POS con Alerta de Stock y Bloqueo en Cero
-**Como** Recepcionista, **quiero** vender productos y ver alertas de inventario, **para** mantener la rotación de existencias.
-* **Criterios de Aceptación:**
-    1. Mostrar alerta visual crítica cuando el stock local sea `<= 20%`.
-    2. **Bloqueo:** No permitir la venta (botón deshabilitado) si el stock local es `0`.
-    3. Cada venta genera un registro en la cola de sincronización.
+### HU-03 — Venta de Producto / Consumo en Mostrador
+**Como** recepcionista/admin/owner,
+**quiero** registrar ventas de productos con múltiples ítems,
+**para** controlar el stock y registrar ingresos del gimnasio.
+
+### Criterios de Aceptación
+
+**CA-01 — Alerta de stock bajo**  
+Dado que un producto tiene `stock <= initialStock * 0.20`,  
+cuando el recepcionista visualiza el catálogo o selecciona el producto,  
+entonces se muestra una alerta visual crítica (banner rojo) indicando stock bajo.
+
+**CA-02 — Bloqueo por stock cero**  
+Dado que un producto tiene `stock == 0`,  
+cuando el recepcionista intenta agregarlo a la venta,  
+entonces el botón de venta está deshabilitado y el servidor rechaza la operación.
+
+**CA-03 — Venta multi-item**  
+Dado que el recepcionista selecciona múltiples productos con cantidades,  
+cuando confirma la venta,  
+entonces se registra una `Sale` con sus `SaleLine` correspondientes y se descuenta el stock de cada producto.
+
+**CA-04 — Idempotencia**  
+Dado que una venta fue enviada con un `ClientGuid`,  
+cuando el servidor recibe el mismo `ClientGuid` por segunda vez,  
+entonces responde `200 OK` sin reprocesar ni duplicar el descuento de stock.
+
+**CA-05 — Cancelación de venta**  
+Dado que existe una venta registrada,  
+cuando un Admin u Owner la cancela,  
+entonces el stock de cada producto en las `SaleLine` se restaura dentro de una transacción atómica.
+
+**CA-06 — Operación offline**  
+Dado que no hay conexión a internet,  
+cuando el recepcionista registra una venta,  
+entonces la venta se encola en `sync_queue` con type `'Sale'` y se sincroniza automáticamente al recuperar la conexión.
+
+**CA-07 — Reconciliación de stock**  
+Dado que el stock local difiere del stock del servidor tras sincronizar,  
+entonces el cliente sobreescribe su valor local con el valor del servidor (servidor autoritativo).
+
+**CA-08 — ABM de productos**  
+Dado que el admin gestiona el catálogo,  
+cuando crea, edita o elimina un producto,  
+entonces los cambios se reflejan en la base de datos y en el catálogo local offline.
+
+**CA-09 — Seed de productos**  
+El entorno de desarrollo incluye un seed con al menos 10 productos de prueba con stock inicial definido.
+
+**CA-10 — Roles**  
+Solo los roles `Receptionist`, `Admin` y `Owner` pueden registrar ventas.  
+Solo `Admin` y `Owner` pueden cancelar ventas o gestionar el catálogo (ABM).
 
 ### HU-04: Sincronización Automática e Idempotente
 **Como** Sistema, **quiero** subir los registros acumulados al detectar red, **para** asegurar la integridad de la base central.

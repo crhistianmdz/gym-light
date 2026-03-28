@@ -18,12 +18,23 @@ public static class AuthExtensions
         IConfiguration config)
     {
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<ISaleRepository, SaleRepository>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<LoginUseCase>();
         services.AddScoped<RefreshTokenUseCase>();
         services.AddScoped<LogoutUseCase>();
+        
+        // Use Cases — Sales & Products (HU-03)
+        services.AddScoped<GetProductsUseCase>();
+        services.AddScoped<GetProductByIdUseCase>();
+        services.AddScoped<CreateProductUseCase>();
+        services.AddScoped<UpdateProductUseCase>();
+        services.AddScoped<DeleteProductUseCase>();
+        services.AddScoped<CreateSaleUseCase>();
+        services.AddScoped<CancelSaleUseCase>();
 
         var secret   = config["Jwt:Secret"]   ?? throw new InvalidOperationException("Jwt:Secret not configured.");
         var issuer   = config["Jwt:Issuer"]   ?? "gymflow";

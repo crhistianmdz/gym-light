@@ -39,6 +39,23 @@ Desarrollar una plataforma de gestión para gimnasios de alto tráfico que garan
 4.  **Idempotencia:** Cada transacción local genera un UUID (ClientGuid) único para evitar duplicados en la sincronización.
 5.  **Inventario:** El sistema debe impedir ventas offline si el stock local registrado es 0.
 
+### Ventas y Stock (HU-03)
+
+**Modelo de venta**: Multi-item — una `Sale` contiene múltiples `SaleLine` (producto + cantidad + precio unitario + subtotal).
+
+**Umbral de stock bajo**: `stock <= product.initialStock * 0.20` → mostrar alerta visual crítica en UI. El servidor incluye flag `isLowStock` en la respuesta.
+
+**Bloqueo de venta**: Si `product.stock == 0` → botón de venta deshabilitado en frontend. El servidor también rechaza la venta (defensa en profundidad).
+
+**Cancelación de venta**: Un endpoint `DELETE /api/sales/{id}` revierte la venta — restaura el stock de cada `SaleLine` dentro de una transacción DB. Solo disponible para `Admin` y `Owner`.
+
+**Roles autorizados para vender**: `Receptionist`, `Admin`, `Owner`.  
+**Roles autorizados para cancelar**: `Admin`, `Owner`.
+
+**ABM de productos (Fase 1)**: Crear, editar y eliminar productos es parte de HU-03. Incluye seed de productos de prueba para desarrollo.
+
+**Idempotencia**: Toda venta incluye `ClientGuid` (UUID v4). El servidor responde `200 OK` si ya procesó ese GUID (no reprocesa).
+
 ## 5. Especificaciones Técnicas (Stack SSD)
 *   **Backend:** .NET 8 (Web API) con Clean Architecture.
 *   **Frontend:** React (PWA) con Service Workers.

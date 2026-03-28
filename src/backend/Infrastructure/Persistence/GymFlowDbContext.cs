@@ -16,6 +16,10 @@ public class GymFlowDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<AccessLog> AccessLogs => Set<AccessLog>();
 
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Sale> Sales { get; set; }
+    public DbSet<SaleLine> SaleLines { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -76,6 +80,38 @@ public class GymFlowDbContext : DbContext
              .WithMany()
              .HasForeignKey(l => l.MemberId)
              .OnDelete(DeleteBehavior.Restrict);
+        });
+        // Product
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.HasIndex(p => p.Sku).IsUnique().HasFilter("\"Sku\" IS NOT NULL");
+            entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
+            entity.ToTable(t => t.HasCheckConstraint("CK_Product_Stock", "\"Stock\" >= 0"));
+        });
+
+        // Sale
+        modelBuilder.Entity<Sale>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.HasIndex(s => s.ClientGuid).IsUnique();
+            entity.Property(s => s.Total).HasColumnType("decimal(18,2)");
+            entity.HasMany(s => s.Lines)
+                  .WithOne(l => l.Sale)
+                  .HasForeignKey(l => l.SaleId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // SaleLine
+        modelBuilder.Entity<SaleLine>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.UnitPrice).HasColumnType("decimal(18,2)");
+            entity.Property(l => l.Subtotal).HasColumnType("decimal(18,2)");
+            entity.HasOne(l => l.Product)
+                  .WithMany()
+                  .HasForeignKey(l => l.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

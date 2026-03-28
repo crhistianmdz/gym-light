@@ -10,7 +10,7 @@ import { db } from '@/db/gymflow.db'
  */
 export function SyncStatusBadge() {
   const pendingCount = useLiveQuery(
-    () => db.sync_queue.count(),
+    () => db.sync_queue.where('type').equals('Sale').or('type').equals('SaleCancel').count(),
     [],
     0,
   )
