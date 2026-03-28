@@ -14,6 +14,7 @@ import {
   type LoginPayload,
 } from '@/services/authService';
 import { initHttpClient } from '@/services/httpClient';
+import { syncService } from '@/services/syncService';
 import type { AuthSession } from '@/types/auth';
 
 interface AuthContextValue {
@@ -58,6 +59,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       () => { void doLogout(); },
     );
   }, [doRefresh, doLogout]);
+
+  // Start SyncService — runs for the lifetime of the app
+  useEffect(() => {
+    syncService.startSync();
+
+    // Pause sync queue on auth-required event (token expired mid-sync)
+    const handleAuthRequired = () => { void doLogout(); };
+    window.addEventListener('sync:auth-required', handleAuthRequired);
+
+    return () => {
+      syncService.stopSync();
+      window.removeEventListener('sync:auth-required', handleAuthRequired);
+    };
+  }, [doLogout]);
 
   // Silent refresh on mount to restore session from HttpOnly cookie
   useEffect(() => {

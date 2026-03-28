@@ -49,22 +49,34 @@ export interface LocalMetadata {
   value: string;
 }
 
+export interface ErrorQueueItem {
+  guid: string;
+  type: SyncEventType;
+  payload: string;
+  timestamp: number;
+  retryCount: number;
+  lastError: string;
+  failedAt: number;
+}
+
 class GymFlowDatabase extends Dexie {
   users!: EntityTable<LocalMember, 'id'>;
   sync_queue!: EntityTable<SyncQueueItem, 'guid'>;
   metadata!: EntityTable<LocalMetadata, 'key'>;
   products!: EntityTable<ProductLocal, 'id'>;
   sales!: EntityTable<SaleLocal, 'id'>;
+  error_queue!: EntityTable<ErrorQueueItem, 'guid'>;
 
   constructor() {
     super('gymflow');
 
-    this.version(2).stores({
+    this.version(3).stores({
       users: 'id, status, membershipEndDate',
       sync_queue: 'guid, type, timestamp, retryCount',
       metadata: 'key',
       products: 'id, name, sku, stock',
       sales: 'id, clientGuid, status, timestamp',
+      error_queue: 'guid, type, timestamp, retryCount'
     });
   }
 }

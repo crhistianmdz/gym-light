@@ -68,56 +68,46 @@ El entorno de desarrollo incluye un seed con al menos 10 productos de prueba con
 Solo los roles `Receptionist`, `Admin` y `Owner` pueden registrar ventas.  
 Solo `Admin` y `Owner` pueden cancelar ventas o gestionar el catálogo (ABM).
 
-### HU-04: Sincronización Automática e Idempotente
-**Como** Sistema, **quiero** subir los registros acumulados al detectar red, **para** asegurar la integridad de la base central.
-* **Criterios de Aceptación:**
-    1. Disparar proceso al detectar evento `online` o cada 5 min (Retry Policy).
-    2. El backend debe ignorar duplicados basados en `ClientGuid` y responder `200 OK`.
-    3. Limpiar la cola local solo tras la confirmación exitosa del servidor.
+### HU-04 — Sincronización Automática e Idempotente
+**Como** sistema,
+**quiero** sincronizar automáticamente los registros pendientes cuando hay conexión,
+**para** garantizar la integridad de los datos entre el cliente offline y el servidor.
 
-### HU-05: Autenticación Robusta y Sesión Offline
-**Como** Usuario, **quiero** mantener mi sesión activa de forma segura, **para** operar la PWA incluso sin conexión.
-* **Criterios de Aceptación:**
-    1. Uso de `HttpOnly Cookies` para Refresh Tokens.
-    2. Solicitar `navigator.storage.persist()` para proteger la base de datos local.
+#### Criterios de Aceptación
 
-### HU-06: Auditoría de Transacciones (Logs)
-**Como** Administrador, **quiero** ver un registro de las acciones realizadas por cada usuario, **para** auditar la operación y prevenir fraudes.
-* **Criterios de Aceptación:**
-    1. Cada acción (pago, acceso, venta) debe quedar asociada al ID del usuario que la ejecutó.
+**CA-01 — Disparo automático**  
+Al recuperar conexión (evento `online`) o cada 5 minutos, el SyncService procesa la `sync_queue` automáticamente.
 
-## Épica 2: Gestión Avanzada y Fidelización (Fase 2)
+**CA-02 — Idempotencia servidor**  
+Dado que el servidor recibe un `ClientGuid` ya procesado,  
+entonces responde `200 OK` con `{ alreadyProcessed: true, data: <entidad> }`.  
+El cliente elimina el item de la cola y re-hidrata su cache con `data`.
 
-### HU-07: Lógica de Congelamiento de Membresía
-**Como** Administrador, **quiero** pausar la suscripción de un socio, **para** gestionar solicitudes de viaje o salud.
-* **Criterios de Aceptación:**
-    1. Validar máximo **4 congelamientos por año**.
-    2. Validar duración mínima de **7 días**.
-    3. Denegar acceso inmediato y recalcular `EndDate` sumando los días de pausa.
+**CA-03 — Limpieza de cola**  
+Un item se elimina de `sync_queue` únicamente tras confirmación exitosa del servidor (200 o 201).
 
-### HU-08: Cancelación con Acceso Residual (No Reembolso)
-**Como** Socio, **quiero** cancelar mi suscripción pero seguir asistiendo el tiempo restante, **para** aprovechar el periodo pagado.
-* **Criterios de Aceptación:**
-    1. El sistema marca "No renovación" sin generar reembolsos automáticos.
-    2. El acceso sigue siendo permitido hasta la fecha de expiración original.
+**CA-04 — Política de reintentos**  
+Si un item falla, se incrementa su `retryCount`.  
+Al llegar a 3 fallos, se mueve a `error_queue` y la cola continúa con el siguiente item.
 
-### HU-09: Perfil Antropométrico y Progreso
-**Como** Entrenador, **quiero** registrar medidas físicas del socio, **para** demostrar el valor del servicio.
-* **Criterios de Aceptación:**
-    1. Formulario para: peso, % grasa, pecho, cintura, cadera, brazo y pierna.
+**CA-05 — Error-tray**  
+Los items en `error_queue` son visibles para Admin/Owner. Pueden ser reintentados manualmente o descartados desde la UI.
 
-### HU-10: Visualización de Evolución (Gráficas)
-**Como** Socio, **quiero** ver gráficas de mi progreso físico, **para** mantenerme motivado.
-* **Criterios de Aceptación:**
-    1. Generar gráfica de líneas comparativa entre las distintas tomas de medidas.
+**CA-06 — Locking multi-tab**  
+Si múltiples pestañas están abiertas, solo una procesa la cola simultáneamente (flag `syncLock` en `db.metadata`).
 
-### HU-11: Asignación de Rutinas Digitales
-**Como** Entrenador, **quiero** armar rutinas para mis socios, **para** guiar su entrenamiento.
-* **Criterios de Aceptación:**
-    1. El socio debe poder marcar cada ejercicio como "completado" desde la PWA.
+**CA-07 — Token caducado**  
+Si el servidor responde `401` durante la sincronización, SyncService pausa la cola y notifica la UI para re-login. Reanuda tras autenticación exitosa.
 
-### HU-12: Dashboard de Métricas (Dueño)
-**Como** Dueño, **quiero** ver el flujo de caja y la tasa de deserción (Churn Rate), **para** tomar decisiones estratégicas.
-* **Criterios de Aceptación:**
-    1. Reporte de ingresos mensuales detallado por categoría (Planes vs POS).
-    2. Comparativa de socios activos vs. socios que no renovaron.
+**CA-08 — Reconciliación autoritativa**  
+El servidor es autoritativo. Cada respuesta exitosa incluye la entidad actualizada. El cliente sobreescribe su cache local (stock, estado de membresía, etc.) con esos valores.
+
+**CA-09 — Indicador visual**  
+El componente `SyncStatusBadge` refleja en tiempo real:  
+- 🟢 Verde: cola vacía, todo sincronizado  
+- 🟠 Naranja: items pendientes en `sync_queue`  
+- ⚫ Gris: sin conexión (offline)  
+- 🔴 Rojo: items en `error_queue`
+
+**CA-10 — Tipos soportados**  
+La `sync_queue` procesa eventos de tipo: `CheckIn`, `Sale`, `SaleCancel`, `MemberUpdate`.

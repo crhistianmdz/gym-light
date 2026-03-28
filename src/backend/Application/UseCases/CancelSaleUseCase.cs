@@ -23,8 +23,14 @@ public class CancelSaleUseCase
         if (sale is null)
             return Result<SaleDto>.NotFound("Venta no encontrada.");
 
-        if (sale.Status != "Active")
-            return Result<SaleDto>.ValidationError("La venta ya fue cancelada.");
+        if (sale.Status == "Cancelled")
+            {
+                var dto = sale.ToDto();
+                return Result<SaleDto>.Success(dto);
+            }
+            
+            if (sale.Status != "Active")
+                return Result<SaleDto>.ValidationError("Estado desconocido en la venta.");
 
         foreach (var line in sale.Lines)
         {

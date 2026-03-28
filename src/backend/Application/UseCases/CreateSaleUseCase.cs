@@ -23,9 +23,15 @@ public class CreateSaleUseCase
         if (!request.Lines.Any())
             return Result<SaleDto>.ValidationError("Debe incluir al menos un producto.");
 
+        var existingSale = await _saleRepository.GetByClientGuidAsync(request.ClientGuid, ct);
+        if (existingSale != null)
+        {
+            return Result<SaleDto>.Success(existingSale.ToDto());
+        }
+
         var sale = Sale.Create(
-            request.ClientGuid,
             request.PerformedByUserId,
+            request.ClientGuid,
             DateTime.UtcNow
         );
 

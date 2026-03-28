@@ -22,47 +22,22 @@ Desarrollar una plataforma de gestión para gimnasios de alto tráfico que garan
 *   **Sincronización:** Motor de sincronización idempotente para subir logs locales al detectar red.
 *   **Auditoría Básica:** Registro de "quién hizo qué" (Logs de transacciones) para evitar fraudes en recepción.
 
-### Fase 2: Fidelización y Gestión Avanzada
-*   **Módulo de Congelamiento (Reglas Estrictas):** 
-    *   Máximo 4 eventos por año calendario.
-    *   Mínimo 7 días por evento.
-    *   Bloqueo de acceso inmediato durante el periodo de congelación.
-    *   Extensión automática de la fecha de vencimiento (`EndDate`) sumando los días pausados.
-*   **Política de Cancelación:** Al cancelar, el socio mantiene el derecho de acceso hasta que su suscripción expire (Acceso Residual). No hay reembolsos parciales automáticos.
-*   **Seguimiento de Salud:** Registro de medidas antropométricas y gráficas de evolución física.
-*   **Rutinas Digitales:** Constructor de rutinas y seguimiento de cumplimiento para el socio.
+### Sincronización Automática (HU-04)
 
-## 4. Reglas de Negocio Consolidadas
-1.  **Validación de Acceso:** No se permite el ingreso si la suscripción está vencida o congelada.
-2.  **Seguridad de Identidad:** La foto de perfil es un requisito técnico para habilitar el check-in.
-3.  **Prioridad de Datos:** En caso de conflicto entre local y nube, prevalece la **Autoridad del Servidor**.
-4.  **Idempotencia:** Cada transacción local genera un UUID (ClientGuid) único para evitar duplicados en la sincronización.
-5.  **Inventario:** El sistema debe impedir ventas offline si el stock local registrado es 0.
+**Motor de sync**: SyncService en app JS (no Service Worker). Corre dentro de la pestaña activa.
 
-### Ventas y Stock (HU-03)
+**Disparadores**: Evento `window.online` + timer cada 5 minutos.
 
-**Modelo de venta**: Multi-item — una `Sale` contiene múltiples `SaleLine` (producto + cantidad + precio unitario + subtotal).
+**Estrategia**: Reintento individual — cada evento de `sync_queue` se envía contra su endpoint original.
 
-**Umbral de stock bajo**: `stock <= product.initialStock * 0.20` → mostrar alerta visual crítica en UI. El servidor incluye flag `isLowStock` en la respuesta.
+**Idempotencia**: El servidor responde `200 OK` con `{ alreadyProcessed: true, data: <entidad> }` cuando recibe un `ClientGuid` ya procesado. El cliente elimina el item de la cola y re-hidrata su cache local con `data`.
 
-**Bloqueo de venta**: Si `product.stock == 0` → botón de venta deshabilitado en frontend. El servidor también rechaza la venta (defensa en profundidad).
+**Política de reintentos**: Máximo 3 intentos por item. Al superar el límite, el item se mueve individualmente a `error_queue`. La cola continúa procesando el resto.
 
-**Cancelación de venta**: Un endpoint `DELETE /api/sales/{id}` revierte la venta — restaura el stock de cada `SaleLine` dentro de una transacción DB. Solo disponible para `Admin` y `Owner`.
+**Locking multi-tab**: Un flag en `db.metadata` (`syncLock: boolean`) evita que múltiples pestañas procesen la cola simultáneamente.
 
-**Roles autorizados para vender**: `Receptionist`, `Admin`, `Owner`.  
-**Roles autorizados para cancelar**: `Admin`, `Owner`.
+**Token caducado**: Si el servidor responde `401`, SyncService pausa la cola y notifica la UI para re-login. Reanuda automáticamente tras autenticación exitosa.
 
-**ABM de productos (Fase 1)**: Crear, editar y eliminar productos es parte de HU-03. Incluye seed de productos de prueba para desarrollo.
+**Reconciliación**: El servidor es autoritativo. Cada respuesta exitosa incluye la entidad actualizada. El cliente sobreescribe su cache local con esos valores.
 
-**Idempotencia**: Toda venta incluye `ClientGuid` (UUID v4). El servidor responde `200 OK` si ya procesó ese GUID (no reprocesa).
-
-## 5. Especificaciones Técnicas (Stack SSD)
-*   **Backend:** .NET 8 (Web API) con Clean Architecture.
-*   **Frontend:** React (PWA) con Service Workers.
-*   **Persistencia Local:** IndexedDB (vía Dexie.js).
-*   **Seguridad:** JWT (JSON Web Tokens) con Refresh Tokens en HttpOnly Cookies.
-
-## 6. Requerimientos No Funcionales
-*   **Disponibilidad:** Capacidad de operar offline para check-in y ventas por tiempo indefinido.
-*   **Rendimiento:** Latencia de respuesta en la interfaz de recepción inferior a 200ms.
-*   **Observabilidad:** Indicador visual de estado de sincronización (Sincronizado/Pendiente/Offline).
+**Error-tray**: Items en `error_queue` son visibles para Admin/Owner. Pueden ser reintentados manualmente o descartados.

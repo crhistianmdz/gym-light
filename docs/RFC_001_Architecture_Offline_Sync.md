@@ -18,13 +18,28 @@ Se utilizará **IndexedDB** a través de la librería `Dexie.js` para gestionar 
     *   `type` (CheckIn, Sale, SaleCancel, HealthUpdate).
     *   `payload` (JSON con datos de la transacción).
     *   `timestamp`.
+*   **Store `error_queue`:**
+    Necesaria para almacenar eventos que fallaron 3 veces durante la sincronización.
+    ```typescript
+    db.version(3).stores({
+      // stores anteriores sin cambios...
+      error_queue: 'guid, type, timestamp, retryCount'
+    })
+
+    interface ErrorQueueItem {
+      guid: string
+      type: SyncEventType
+      payload: string
+      timestamp: number
+      retryCount: number
+      lastError: string
+      failedAt: number
+    }
+    ```
 *   **Store `metadata`:** 
     *   `dataVersion`: Versión actual del esquema local.
     *   `lastSyncTimestamp`: Última vez que se descargó el snapshot del servidor.
-*   **Store `products`:**
-    *   `id`, `name`, `sku`, `stock`.  
-*   **Store `sales`:**
-    *   `id`, `clientGuid`, `status`, `timestamp`.
+    *   `syncLock`: Evita que múltiples pestañas procesen la cola simultáneamente (boolean).
 
 ### Estructura de Datos:
 ```typescript
@@ -37,46 +52,24 @@ db.version(2).stores({
 })
 ```
 
-#### Tipos TypeScript:
-```typescript
-interface ProductLocal {
-  id: string
-  sku?: string
-  name: string
-  description?: string
-  price: number
-  stock: number           // stock actual
-  initialStock: number    // para calcular umbral 20%
-  reorderThreshold?: number
-  updatedAt: number
-}
-
-interface SaleLocal {
-  id: string
-  clientGuid: string
-  lines: SaleLineLocal[]
-  total: number
-  status: 'pending' | 'synced' | 'cancelled'
-  timestamp: number
-  isOffline: boolean
-  retryCount: number
-}
-
-interface SaleLineLocal {
-  productId: string
-  productName: string
-  quantity: number
-  unitPrice: number
-  subtotal: number
-}
-```
-
 ## 3. Estrategia de Red y Service Worker
-El Service Worker actuará como un proxy inteligente siguiendo la estrategia **Network-First with Fallback**.
+Se confirma que **NO** se implementará Service Worker en Fase 1. En su lugar, la lógica de sincronización estará a cargo del `SyncService`, dentro de la pestaña activa.
 
-1.  **Interceptación:** El SW captura peticiones a la API.
-2.  **Modo Online:** Ejecuta el `fetch`. Si tiene éxito, actualiza la store `users` local (re-hidratación).
-3.  **Modo Offline:** Si falla la red o hay timeout (>2s), el SW valida contra IndexedDB y encola la acción en `sync_queue` con el flag `isOffline: true`.
+### Proceso de Sincronización
+```javascript
+processQueue():
+  1. Verificar syncLock en metadata → si locked, abortar
+  2. Setear syncLock = true
+  3. Leer sync_queue ordenado por timestamp
+  4. Por cada item:
+     a. fetch(endpoint, payload, headers: { X-Client-Guid: item.guid })
+     b. Si 200/201: eliminar de sync_queue, actualizar cache local con response.data
+     c. Si 200 con alreadyProcessed=true: eliminar de sync_queue, re-hidratar cache
+     d. Si 401: pausar cola, emitir evento 'sync:auth-required', break
+     e. Si 4xx (no 401): incrementar retryCount; si >= 3 → mover a error_queue
+     f. Si 5xx o timeout: incrementar retryCount; si >= 3 → mover a error_queue
+  5. Liberar syncLock = false
+```
 
 ## 4. Lógica de Sincronización y Conflictos
 Para asegurar la integridad entre el cliente y el servidor:
@@ -94,14 +87,3 @@ Para asegurar la integridad entre el cliente y el servidor:
     *   Bloqueo de venta si el stock local es `0`.  
     *   Notificación de stock crítico al llegar al `20%`.
     *   Confirmación con autoridad del servidor para ajustes de stock.
-
-## 6. Observabilidad y UX
-*   **Status Indicador:** 
-    *   `Verde`: Sincronizado.
-    *   `Naranja`: Online con `X` registros pendientes.
-    *   `Gris`: Modo Offline (Operando con caché local).
-*   **Retry Policy:** El cliente reintentará la sincronización cada 5 minutos o tras el evento `online`. Si un registro falla 3 veces, pasará a una "Bandeja de Errores" para revisión manual.
-
-## 7. Seguridad
-*   **Auth:** JWT con Refresh Tokens en `HttpOnly Cookies`.
-*   **Persistencia de Sesión:** El sistema solicitará `navigator.storage.persist()` para evitar que el navegador elimine la base de datos IndexedDB durante limpiezas automáticas de caché.

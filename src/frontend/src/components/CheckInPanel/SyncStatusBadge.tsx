@@ -9,6 +9,7 @@ import { db } from '@/db/gymflow.db'
  *   Gris   → sin conexión (navigator.onLine === false)
  */
 export function SyncStatusBadge() {
+  const errorCount = useLiveQuery(() => db.error_queue.count(), [], 0);
   const pendingCount = useLiveQuery(
     () => db.sync_queue.where('type').equals('Sale').or('type').equals('SaleCancel').count(),
     [],
@@ -24,6 +25,12 @@ export function SyncStatusBadge() {
       : { color: '#4caf50', label: '● Sincronizado', title: 'Todos los registros están sincronizados' }
 
   return (
+    <>
+      {errorCount > 0 && (
+        <span style={{ color: '#f44336', fontWeight: 600, fontSize: 13, marginLeft: 8 }} title={`${errorCount} errores por resolver`}>
+          2c10 {errorCount}
+        </span>
+      )}
     <span
       title={config.title}
       style={{
@@ -37,7 +44,7 @@ export function SyncStatusBadge() {
       aria-live="polite"
       aria-label={config.title}
     >
-      {config.label}
-    </span>
-  )
+       {config.label}
+     </span>
+   )}
 }

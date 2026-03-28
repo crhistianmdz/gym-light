@@ -17,8 +17,13 @@ public class IdempotencyFilter : IAsyncActionFilter
 {
     private const string ClientGuidHeader = "X-Client-Guid";
     private readonly IAccessLogRepository _accessLogs;
+        private readonly ISaleRepository _saleRepository;
 
-    public IdempotencyFilter(IAccessLogRepository accessLogs)
+    public IdempotencyFilter(IAccessLogRepository accessLogs, ISaleRepository saleRepository)
+        {
+            _accessLogs = accessLogs;
+            _saleRepository = saleRepository;
+        }
     {
         _accessLogs = accessLogs;
     }
@@ -42,7 +47,7 @@ public class IdempotencyFilter : IAsyncActionFilter
             return;
         }
 
-        var alreadyProcessed = await _accessLogs.ClientGuidExistsAsync(clientGuid);
+        var alreadyProcessed = await __saleRepository.ClientGuidExistsAsync(clientGuid);
         if (alreadyProcessed)
         {
             // Duplicado detectado: responder 200 OK sin reejecutar
