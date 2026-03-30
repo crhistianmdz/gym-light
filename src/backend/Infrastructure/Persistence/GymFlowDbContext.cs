@@ -13,6 +13,7 @@ public class GymFlowDbContext : DbContext
 
     public DbSet<Member> Members => Set<Member>();
     public DbSet<AppUser> AppUsers { get; set; }
+    public DbSet<BodyMeasurement> BodyMeasurements { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<AccessLog> AccessLogs => Set<AccessLog>();
 
@@ -139,6 +140,24 @@ public class GymFlowDbContext : DbContext
             // Índice para consultas por socio + año (filtro frecuente HU-07)
             e.HasIndex(f => new { f.MemberId, f.StartDate })
              .HasDatabaseName("IX_MembershipFreezes_MemberId_StartDate");
+        });
+        // ── BodyMeasurement (HU-09) ─────────────────────────────────────────────
+        modelBuilder.Entity<BodyMeasurement>(e =>
+        {
+            e.ToTable("BodyMeasurements");
+            e.HasKey(b => b.Id);
+            e.Property(b => b.WeightKg).HasColumnType("decimal(7,2)").IsRequired();
+            e.Property(b => b.BodyFatPct).HasColumnType("decimal(5,2)").IsRequired();
+            e.Property(b => b.ChestCm).HasColumnType("decimal(6,2)").IsRequired();
+            e.Property(b => b.WaistCm).HasColumnType("decimal(6,2)").IsRequired();
+            e.Property(b => b.HipCm).HasColumnType("decimal(6,2)").IsRequired();
+            e.Property(b => b.ArmCm).HasColumnType("decimal(6,2)").IsRequired();
+            e.Property(b => b.LegCm).HasColumnType("decimal(6,2)").IsRequired();
+            e.Property(b => b.UnitSystem).HasConversion<string>().IsRequired();
+            e.Property(b => b.ClientGuid).IsRequired().HasMaxLength(36);
+            e.HasIndex(b => b.ClientGuid).IsUnique().HasDatabaseName("IX_BodyMeasurements_ClientGuid");
+            e.HasIndex(b => new { b.MemberId, b.RecordedAt }).HasDatabaseName("IX_BodyMeasurements_MemberId_RecordedAt");
+            e.HasOne(b => b.Member).WithMany().HasForeignKey(b => b.MemberId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

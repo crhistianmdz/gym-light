@@ -6,11 +6,17 @@ const SYNC_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
 const SYNC_LOCK_KEY = 'syncLock' // This key prevents concurrent sync processes
 const REQUEST_TIMEOUT_MS = 10000 // 10 seconds
 
-const ENDPOINT_MAP: Record<SyncEventType, { url: string; method: string }> = {
-  CheckIn: { url: '/api/checkin', method: 'POST' },
-  Sale: { url: '/api/sales', method: 'POST' },
-  SaleCancel: { url: '/api/sales', method: 'DELETE' },
-  MemberUpdate: { url: '/api/members', method: 'PUT' },
+const ENDPOINT_MAP: Record<SyncEventType, { url: (payload: Record<string, any>) => string; method: string }> = {
+  CheckIn: { url: () => '/api/checkin', method: 'POST' },
+  Sale: { url: () => '/api/sales', method: 'POST' },
+  SaleCancel: { url: () => '/api/sales', method: 'DELETE' },
+  MemberUpdate: { url: () => '/api/members', method: 'PUT' },
+
+  // New dynamic URL handling for HealthUpdate:
+  HealthUpdate: {
+    url: ({ memberId }: { memberId: string }) => `/api/members/${memberId}/measurements`,
+    method: 'POST',
+  },
 }
 
 export class SyncService {
@@ -31,7 +37,7 @@ export class SyncService {
 
   async processQueue(): Promise<void> {
     if (!navigator.onLine) return
-    
+
     const syncLock = await db.metadata.get(SYNC_LOCK_KEY)
     if (syncLock?.value === 'true') return
 
@@ -46,10 +52,11 @@ export class SyncService {
           const options: RequestInit = {
             method: endpoint.method,
             headers: { 'X-Client-Guid': item.guid },
-            body: item.type !== 'SaleCancel' ? item.payload : undefined,
+            body: item.payload ? JSON.stringify(item.payload) : undefined,
           }
 
-          const response = await this.fetchWithAbort(endpoint.url, options)
+          const url = endpoint.url(JSON.parse(item.payload))
+          const response = await this.fetchWithAbort(url, options)
 
           if (response.ok) {
             const data = await response.json()
@@ -104,42 +111,23 @@ export class SyncService {
     }
   }
 
-  async moveToErrorQueue(item: SyncQueueItem, error: string): Promise<void> {
-    const errorItem: ErrorQueueItem = {
-      guid: item.guid,
-      type: item.type,
-      payload: item.payload,
-      timestamp: item.timestamp,
-      retryCount: item.retryCount,
-      lastError: error,
-      failedAt: Date.now(),
-    }
-    await db.error_queue.add(errorItem)
-    await db.sync_queue.delete(item.guid)
-  }
-
-  async retryFromErrorQueue(guid: string): Promise<void> {
-    const item = await db.error_queue.get(guid)
-    if (!item) return
-
-    await db.sync_queue.add({ ...item, retryCount: 0 })
-    await db.error_queue.delete(guid)
-  }
-
-  async discardFromErrorQueue(guid: string): Promise<void> {
-    await db.error_queue.delete(guid)
-  }
-
   async updateLocalCache(type: SyncEventType, data: Record<string, unknown>): Promise<void> {
     if (type === 'CheckIn') {
-      const { memberId, lastCheckIn, status } = data as { memberId: string; lastCheckIn: string; status: string };
-      await db.users.update(memberId, { lastCheckIn, status });
+      const { memberId, lastCheckIn, status } = data as { memberId: string; lastCheckIn: string; status: string }
+      await db.users.update(memberId, { lastCheckIn, status })
     } else if (type === 'Sale') {
-      const sale = data as { id: string; clientGuid: string; status: string; total: number; timestamp: string; lines: Array<{ productId: string; quantity: number; unitPrice: number; subtotal: number; productName: string }> }
+      const sale = data as {
+        id: string
+        clientGuid: string
+        status: string
+        total: number
+        timestamp: string
+        lines: Array<{ productId: string; quantity: number; unitPrice: number; subtotal: number; productName: string }>
+      }
       await db.sales.put({
         id: sale.id,
         clientGuid: sale.clientGuid,
-        lines: sale.lines.map(l => ({
+        lines: sale.lines.map((l) => ({
           productId: l.productId,
           productName: l.productName,
           quantity: l.quantity,
@@ -151,6 +139,12 @@ export class SyncService {
         timestamp: new Date(sale.timestamp).getTime(),
         isOffline: false,
         retryCount: 0,
+      })
+    } else if (type === 'HealthUpdate') {
+      const m = data as MeasurementDto
+      await db.measurements.where('clientGuid').equals(m.clientGuid).modify({
+        syncStatus: 'synced',
+        id: m.id,
       })
     }
   }

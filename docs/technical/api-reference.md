@@ -423,4 +423,78 @@ curl -X DELETE https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f
 # Historial de congelamientos
 curl https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f66afa6/freezes \
   -H "Authorization: Bearer $JWT"
+
+# Registrar medida antropométrica
+curl -X POST https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f66afa6/measurements \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clientGuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "recordedAt": "2026-03-30T20:00:00Z",
+    "weightKg": 78.5,
+    "bodyFatPct": 18.2,
+    "chestCm": 95.0,
+    "waistCm": 82.5,
+    "hipCm": 98.0,
+    "armCm": 35.0,
+    "legCm": 58.0,
+    "unitSystem": "Metric",
+    "notes": "Después del ciclo de fuerza"
+  }'
+
+# Historial de medidas
+curl https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f66afa6/measurements \
+  -H "Authorization: Bearer $JWT"
 ```
+
+---
+
+## POST /api/members/{memberId}/measurements
+
+Registra una nueva toma de medidas antropométricas para un socio. Idempotente via `ClientGuid`.
+
+**Roles permitidos:** `Trainer`, `Admin`, `Owner`, `Member` (solo su propio `memberId`)
+
+### Request Body
+
+```json
+{
+  "clientGuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "recordedAt": "2026-03-30T20:00:00Z",
+  "weightKg": 78.5,
+  "bodyFatPct": 18.2,
+  "chestCm": 95.0,
+  "waistCm": 82.5,
+  "hipCm": 98.0,
+  "armCm": 35.0,
+  "legCm": 58.0,
+  "unitSystem": "Metric",
+  "notes": "Opcional"
+}
+```
+
+### Responses
+
+| Status | Descripción |
+|---|---|
+| `201 Created` | Medida registrada |
+| `200 OK` | `ClientGuid` ya procesado (idempotente) |
+| `400 Bad Request` | Campo <= 0 o faltante |
+| `403 Forbidden` | Receptionist, o Member intentando registrar para otro socio |
+| `404 Not Found` | Socio no encontrado |
+
+---
+
+## GET /api/members/{memberId}/measurements
+
+Obtiene el historial completo de medidas del socio, ordenado por fecha descendente.
+
+**Roles permitidos:** `Trainer`, `Admin`, `Owner`, `Member` (solo su propio `memberId`)
+
+### Responses
+
+| Status | Descripción |
+|---|---|
+| `200 OK` | Lista de `BodyMeasurementDto[]` (puede ser `[]`) |
+| `403 Forbidden` | Sin permisos |
+| `404 Not Found` | Socio no encontrado |

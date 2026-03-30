@@ -59,6 +59,25 @@ export interface ErrorQueueItem {
   failedAt: number;
 }
 
+// Added for HU-09 Anthropometric
+export interface MeasurementLocal {
+  id?: number;
+  memberId: string;
+  recordedById: string;
+  recordedAt: string; // ISO string
+  weightKg: number;
+  bodyFatPct: number;
+  chestCm: number;
+  waistCm: number;
+  hipCm: number;
+  armCm: number;
+  legCm: number;
+  unitSystem: 'metric' | 'imperial';
+  notes?: string;
+  clientGuid: string;
+  syncStatus: 'pending' | 'synced' | 'error';
+}
+
 class GymFlowDatabase extends Dexie {
   users!: EntityTable<LocalMember, 'id'>;
   sync_queue!: EntityTable<SyncQueueItem, 'guid'>;
@@ -67,16 +86,22 @@ class GymFlowDatabase extends Dexie {
   sales!: EntityTable<SaleLocal, 'id'>;
   error_queue!: EntityTable<ErrorQueueItem, 'guid'>;
 
+  // Added anthropometry
+  measurements!: EntityTable<MeasurementLocal, 'id'>;
+
   constructor() {
     super('gymflow');
 
-    this.version(3).stores({
+    this.version(4).stores({
       users: 'id, status, membershipEndDate',
       sync_queue: 'guid, type, timestamp, retryCount',
       metadata: 'key',
       products: 'id, name, sku, stock',
       sales: 'id, clientGuid, status, timestamp',
-      error_queue: 'guid, type, timestamp, retryCount'
+      error_queue: 'guid, type, timestamp, retryCount',
+
+      // New measurements schema
+      measurements: '++id, memberId, clientGuid, recordedAt, syncStatus'
     });
   }
 }

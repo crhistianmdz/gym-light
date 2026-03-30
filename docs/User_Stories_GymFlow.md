@@ -144,9 +144,21 @@ La `sync_queue` procesa eventos de tipo: `CheckIn`, `Sale`, `SaleCancel`, `Membe
     2. El acceso sigue siendo permitido hasta la fecha de expiración original.
 
 ### HU-09: Perfil Antropométrico y Progreso
-**Como** Entrenador, **quiero** registrar medidas físicas del socio, **para** demostrar el valor del servicio.
+**Como** Entrenador o Socio, **quiero** registrar medidas físicas del socio, **para** demostrar el valor del servicio y hacer seguimiento del progreso personal.
 * **Criterios de Aceptación:**
-    1. Formulario para: peso, % grasa, pecho, cintura, cadera, brazo y pierna.
+    1. Formulario con 7 campos **todos obligatorios**: peso, % grasa, pecho, cintura, cadera, brazo y pierna.
+    2. Tanto el **Entrenador** como el **Socio** pueden registrar medidas (el Socio solo puede registrar las suyas propias).
+    3. El sistema soporta **dos sistemas de unidades**: métrico (kg / cm) e imperial (lbs / inches). El usuario selecciona el sistema al registrar; la UI muestra las etiquetas correspondientes.
+    4. Las medidas se almacenan junto al `unitSystem` utilizado al momento del registro.
+    5. El registro de medidas soporta modo **offline**: se encola en `sync_queue` con tipo `HealthUpdate` y se sincroniza automáticamente al recuperar la conexión.
+    6. Las medidas se listan ordenadas por fecha de toma (más reciente primero).
+    7. Solo `Trainer`, `Admin`, `Owner` y el propio `Member` pueden acceder al historial de medidas de un socio.
+
+* **Decisiones de PO (2026-03-30):**
+    - RBAC POST: `Trainer`, `Admin`, `Owner`, `Member` (ownership propio)
+    - RBAC GET: `Trainer`, `Admin`, `Owner`, `Member` (ownership propio)
+    - Campos: todos obligatorios (sin nullables)
+    - Unidades: métrico (`kg`/`cm`) e imperial (`lbs`/`inches`) — campo `unitSystem` en entidad
 
 ### HU-10: Visualización de Evolución (Gráficas)
 **Como** Socio, **quiero** ver gráficas de mi progreso físico, **para** mantenerme motivado.

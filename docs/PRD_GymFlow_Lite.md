@@ -29,7 +29,7 @@ Desarrollar una plataforma de gestión para gimnasios de alto tráfico que garan
     *   Bloqueo de acceso inmediato durante el periodo de congelación.
     *   Extensión automática de la fecha de vencimiento (`EndDate`) sumando los días pausados.
 *   **Política de Cancelación:** Al cancelar, el socio mantiene el derecho de acceso hasta que su suscripción expire (Acceso Residual). No hay reembolsos parciales automáticos.
-*   **Seguimiento de Salud:** Registro de medidas antropométricas y gráficas de evolución física.
+*   **Seguimiento de Salud:** Registro de medidas antropométricas (peso, % grasa, pecho, cintura, cadera, brazo, pierna) con soporte de unidades métricas (kg/cm) e imperiales (lbs/inches). Tanto el Entrenador como el Socio pueden registrar medidas (el Socio solo las propias). Soporte offline-first con sincronización automática. Gráficas de evolución física (HU-10).
 *   **Rutinas Digitales:** Constructor de rutinas y seguimiento de cumplimiento para el socio.
 
 ## 4. Reglas de Negocio Consolidadas
