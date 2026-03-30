@@ -65,6 +65,13 @@ export function MemberAccessCard({
         <p style={{ margin: '4px 0 0', fontSize: 13, color: '#f44336' }}>{denialReason}</p>
       )}
 
+      {/* HU-07: mensaje específico para membresías congeladas */}
+      {!allowed && status === 'Frozen' && !denialReason && (
+        <p style={{ margin: '4px 0 0', fontSize: 13, color: '#f44336' }}>
+          La membresía está congelada. El acceso está bloqueado hasta que finalice el período de pausa.
+        </p>
+      )}
+
       {/* Indicador de fuente — útil para debugging en recepción */}
       {source === 'offline' && (
         <p style={{ marginTop: 8, fontSize: 11, color: '#9e9e9e' }}>

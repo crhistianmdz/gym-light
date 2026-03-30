@@ -81,9 +81,44 @@ public class Member
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void Freeze()
+    /// <summary>
+    /// Aplica un congelamiento: cambia el status a Frozen y extiende MembershipEndDate
+    /// sumando los días de pausa al vencimiento actual.
+    ///
+    /// HU-07 Regla R3: bloqueo de acceso inmediato.
+    /// HU-07 Regla R4: EndDate se recalcula sumando durationDays.
+    /// </summary>
+    /// <param name="durationDays">Días efectivos del congelamiento (mín. 7, validado en MembershipFreeze.Create).</param>
+    public void Freeze(int durationDays)
     {
+        if (durationDays < 7)
+            throw new ArgumentException(
+                "No se puede congelar por menos de 7 días.",
+                nameof(durationDays));
+
         Status = MemberStatus.Frozen;
+        MembershipEndDate = MembershipEndDate.AddDays(durationDays);
         UpdatedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Descongela la membresía: restaura el status a Active.
+    /// El MembershipEndDate ya fue extendido al momento de congelar y NO se revierte.
+    /// </summary>
+    public void Unfreeze()
+    {
+        if (Status != MemberStatus.Frozen)
+            throw new InvalidOperationException(
+                $"No se puede descongelar un socio con status '{Status}'. Solo aplica a socios Frozen.");
+
+        Status = MemberStatus.Active;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Valida la regla HU-07: máximo 4 congelamientos por año calendario.
+    /// </summary>
+    /// <param name="freezeCountThisYear">Cantidad de congelamientos ya registrados en el año actual.</param>
+    /// <returns>True si puede congelarse, false si ya alcanzó el límite.</returns>
+    public bool CanFreezeThisYear(int freezeCountThisYear) => freezeCountThisYear < 4;
 }

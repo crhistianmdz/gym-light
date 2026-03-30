@@ -20,6 +20,9 @@ public class GymFlowDbContext : DbContext
     public DbSet<Sale> Sales { get; set; }
     public DbSet<SaleLine> SaleLines { get; set; }
 
+    // HU-07 — Congelamiento de membresías
+    public DbSet<MembershipFreeze> MembershipFreezes { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -114,6 +117,28 @@ public class GymFlowDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(l => l.ProductId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ── MembershipFreeze (HU-07) ─────────────────────────────────────────────
+        modelBuilder.Entity<MembershipFreeze>(e =>
+        {
+            e.ToTable("MembershipFreezes");
+            e.HasKey(f => f.Id);
+            e.Property(f => f.StartDate).IsRequired();
+            e.Property(f => f.EndDate).IsRequired();
+            e.Property(f => f.DurationDays).IsRequired();
+            e.Property(f => f.CreatedByUserId).IsRequired();
+            e.Property(f => f.CreatedAt).IsRequired();
+
+            // Relación con Member
+            e.HasOne(f => f.Member)
+             .WithMany()
+             .HasForeignKey(f => f.MemberId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            // Índice para consultas por socio + año (filtro frecuente HU-07)
+            e.HasIndex(f => new { f.MemberId, f.StartDate })
+             .HasDatabaseName("IX_MembershipFreezes_MemberId_StartDate");
         });
     }
 }

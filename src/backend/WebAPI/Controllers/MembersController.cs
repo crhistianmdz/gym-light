@@ -2,23 +2,33 @@ using GymFlow.Application.DTOs;
 using GymFlow.Application.UseCases.Members;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace GymFlow.WebAPI.Controllers;
 
 /// <summary>
 /// CRUD de socios.
 /// HU-02: POST /api/members — registro con foto WebP obligatoria.
+/// HU-07: POST/DELETE /api/members/{id}/freeze — congelamiento de membresía (Admin/Owner).
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Receptionist,Admin")]
+[Authorize(Roles = "Receptionist,Admin,Owner")]
 public class MembersController : ControllerBase
 {
     private readonly RegisterMemberUseCase _registerMember;
+    private readonly FreezeMembershipUseCase _freezeMembership;
+    private readonly UnfreezeMembershipUseCase _unfreezeMembership;
 
-    public MembersController(RegisterMemberUseCase registerMember)
+    public MembersController(
+        RegisterMemberUseCase registerMember,
+        FreezeMembershipUseCase freezeMembership,
+        UnfreezeMembershipUseCase unfreezeMembership)
     {
-        _registerMember = registerMember;
+        _registerMember     = registerMember;
+        _freezeMembership   = freezeMembership;
+        _unfreezeMembership = unfreezeMembership;
     }
 
     /// <summary>
@@ -80,4 +90,149 @@ public class MembersController : ControllerBase
         // Placeholder — se implementa en HU posterior con GetMemberUseCase
         return NotFound();
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // HU-07 — Congelamiento de membresía
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// POST /api/members/{id}/freeze
+    ///
+    /// Congela la membresía de un socio. Solo Admin y Owner.
+    ///
+    /// Reglas HU-07:
+    ///   - Mínimo 7 días.
+    ///   - Máximo 4 congelamientos por año calendario.
+    ///   - Status cambia a Frozen inmediatamente.
+    ///   - MembershipEndDate se extiende sumando los días de pausa.
+    ///
+    /// Body: { "startDate": "2026-04-01", "endDate": "2026-04-14" }
+    ///
+    /// Respuestas:
+    ///   200 OK          → congelamiento aplicado, retorna MembershipFreezeDto
+    ///   400 Bad Request → validación fallida (duración < 7 días, límite anual alcanzado, socio no Active)
+    ///   404 Not Found   → socio no encontrado
+    ///   403 Forbidden   → rol insuficiente
+    /// </summary>
+    [HttpPost("{id:guid}/freeze")]
+    [Authorize(Roles = "Admin,Owner")]
+    [ProducesResponseType(typeof(MembershipFreezeDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Freeze(
+        Guid id,
+        [FromBody] FreezeRequestBody body,
+        CancellationToken ct)
+    {
+        var callerId = GetCurrentUserId();
+        if (callerId is null)
+            return Unauthorized();
+
+        var dto    = new FreezeMembershipDto(id, body.StartDate, body.EndDate);
+        var result = await _freezeMembership.ExecuteAsync(dto, callerId.Value, ct);
+
+        return result.StatusCode switch
+        {
+            200 => Ok(result.Value),
+            400 => BadRequest(new ProblemDetails
+                    {
+                        Title  = "No se pudo congelar la membresía.",
+                        Detail = result.Error,
+                        Status = 400
+                    }),
+            404 => NotFound(new ProblemDetails
+                    {
+                        Title  = "Socio no encontrado.",
+                        Detail = result.Error,
+                        Status = 404
+                    }),
+            _   => StatusCode(result.StatusCode, new ProblemDetails { Title = result.Error })
+        };
+    }
+
+    /// <summary>
+    /// DELETE /api/members/{id}/freeze
+    ///
+    /// Descongela la membresía de un socio. Solo Admin y Owner.
+    /// El MembershipEndDate NO se revierte (ya fue extendido al congelar).
+    ///
+    /// Respuestas:
+    ///   200 OK          → membresía activa de nuevo, retorna MemberDto actualizado
+    ///   400 Bad Request → socio no está Frozen
+    ///   404 Not Found   → socio no encontrado
+    ///   403 Forbidden   → rol insuficiente
+    /// </summary>
+    [HttpDelete("{id:guid}/freeze")]
+    [Authorize(Roles = "Admin,Owner")]
+    [ProducesResponseType(typeof(MemberDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> Unfreeze(Guid id, CancellationToken ct)
+    {
+        var result = await _unfreezeMembership.ExecuteAsync(id, ct);
+
+        return result.StatusCode switch
+        {
+            200 => Ok(result.Value),
+            400 => BadRequest(new ProblemDetails
+                    {
+                        Title  = "No se pudo descongelar la membresía.",
+                        Detail = result.Error,
+                        Status = 400
+                    }),
+            404 => NotFound(new ProblemDetails
+                    {
+                        Title  = "Socio no encontrado.",
+                        Detail = result.Error,
+                        Status = 404
+                    }),
+            _   => StatusCode(result.StatusCode, new ProblemDetails { Title = result.Error })
+        };
+    }
+
+    /// <summary>
+    /// GET /api/members/{id}/freezes
+    ///
+    /// Retorna el historial de congelamientos de un socio. Solo Admin y Owner.
+    /// </summary>
+    [HttpGet("{id:guid}/freezes")]
+    [Authorize(Roles = "Admin,Owner")]
+    [ProducesResponseType(typeof(IReadOnlyList<MembershipFreezeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetFreezeHistory(
+        Guid id,
+        [FromServices] Domain.Interfaces.IMembershipFreezeRepository freezeRepo,
+        [FromServices] Domain.Interfaces.IMemberRepository memberRepo,
+        CancellationToken ct)
+    {
+        var member = await memberRepo.GetByIdAsync(id, ct);
+        if (member is null)
+            return NotFound();
+
+        var freezes = await freezeRepo.GetByMemberAsync(id, ct);
+
+        var dtos = freezes.Select(f => new MembershipFreezeDto(
+            f.Id, f.MemberId, f.StartDate, f.EndDate,
+            f.DurationDays, f.CreatedByUserId, f.CreatedAt))
+            .ToList();
+
+        return Ok(dtos);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private Guid? GetCurrentUserId()
+    {
+        var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+               ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(sub, out var id) ? id : null;
+    }
 }
+
+/// <summary>Body para el endpoint POST /freeze.</summary>
+public record FreezeRequestBody(DateOnly StartDate, DateOnly EndDate);
+

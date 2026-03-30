@@ -172,3 +172,183 @@ curl -X POST https://localhost:5001/api/members \
     "membershipEndDate": "2027-03-01"
   }'
 ```
+
+---
+
+## POST /api/members/{id}/freeze
+
+Congela la membresía de un socio. Bloquea el acceso inmediatamente y extiende `MembershipEndDate`.
+
+**Roles permitidos:** `Admin`, `Owner`
+
+### Path Params
+
+| Param | Tipo | Descripción |
+|---|---|---|
+| `id` | `Guid` | ID del socio a congelar |
+
+### Request Body
+
+```json
+{
+  "startDate": "2026-04-01",
+  "endDate": "2026-04-14"
+}
+```
+
+| Campo | Tipo | Validación |
+|---|---|---|
+| `startDate` | `DateOnly` | Requerido. No puede ser anterior a hoy |
+| `endDate` | `DateOnly` | Requerido. Debe ser posterior a `startDate` |
+
+**Duración calculada:** `endDate - startDate + 1` días (inclusive). Mínimo: **7 días**.
+
+### Respuestas
+
+#### 200 OK — Congelamiento aplicado
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "memberId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "startDate": "2026-04-01",
+  "endDate": "2026-04-14",
+  "durationDays": 14,
+  "createdByUserId": "9c8b7a65-4321-0fed-cba9-876543210fed",
+  "createdAt": "2026-03-30T20:00:00Z"
+}
+```
+
+> El `MembershipEndDate` del socio fue extendido en `durationDays` días de forma automática.
+
+#### 400 Bad Request — Validación fallida
+
+```json
+{
+  "title": "No se pudo congelar la membresía.",
+  "detail": "La duración mínima de un congelamiento es 7 días. Duración calculada: 3 días.",
+  "status": 400
+}
+```
+
+Posibles causas:
+- Duración menor a 7 días.
+- El socio ya tiene 4 congelamientos en el año calendario (`startDate.Year`).
+- El socio no tiene status `Active` (ya está `Frozen` o `Expired`).
+
+#### 404 Not Found
+
+```json
+{
+  "title": "Socio no encontrado.",
+  "detail": "Socio con Id '3fa85f64-...' no encontrado.",
+  "status": 404
+}
+```
+
+#### 403 Forbidden
+
+El rol del usuario autenticado no es `Admin` ni `Owner`.
+
+---
+
+## DELETE /api/members/{id}/freeze
+
+Descongela la membresía de un socio. Restaura el status a `Active`.
+
+> ⚠️ El `MembershipEndDate` extendido al congelar **no se revierte**. La extensión es permanente.
+
+**Roles permitidos:** `Admin`, `Owner`
+
+### Path Params
+
+| Param | Tipo | Descripción |
+|---|---|---|
+| `id` | `Guid` | ID del socio a descongelar |
+
+### Respuestas
+
+#### 200 OK — Membresía activa nuevamente
+
+```json
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "fullName": "Juan Pérez",
+  "photoWebPUrl": "/photos/3fa85f64-5717-4562-b3fc-2c963f66afa6.webp",
+  "status": "Active",
+  "membershipEndDate": "2027-01-14"
+}
+```
+
+#### 400 Bad Request — Socio no está Frozen
+
+```json
+{
+  "title": "No se pudo descongelar la membresía.",
+  "detail": "El socio no está congelado. Estado actual: 'Active'.",
+  "status": 400
+}
+```
+
+#### 404 Not Found — Socio no encontrado
+
+#### 403 Forbidden — Rol insuficiente
+
+---
+
+## GET /api/members/{id}/freezes
+
+Retorna el historial completo de congelamientos de un socio, ordenado por `startDate` descendente.
+
+**Roles permitidos:** `Admin`, `Owner`
+
+### Path Params
+
+| Param | Tipo | Descripción |
+|---|---|---|
+| `id` | `Guid` | ID del socio |
+
+### Respuestas
+
+#### 200 OK
+
+```json
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "memberId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "startDate": "2026-04-01",
+    "endDate": "2026-04-14",
+    "durationDays": 14,
+    "createdByUserId": "9c8b7a65-4321-0fed-cba9-876543210fed",
+    "createdAt": "2026-03-30T20:00:00Z"
+  }
+]
+```
+
+Array vacío `[]` si el socio no tiene congelamientos.
+
+#### 404 Not Found — Socio no encontrado
+
+---
+
+## Curl de ejemplo — HU-07
+
+```bash
+# Congelar membresía
+curl -X POST https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f66afa6/freeze \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "2026-04-01",
+    "endDate": "2026-04-14"
+  }'
+
+# Descongelar membresía
+curl -X DELETE https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f66afa6/freeze \
+  -H "Authorization: Bearer $JWT"
+
+# Historial de congelamientos
+curl https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f66afa6/freezes \
+  -H "Authorization: Bearer $JWT"
+```

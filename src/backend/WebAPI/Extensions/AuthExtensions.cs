@@ -3,6 +3,7 @@ namespace GymFlow.WebAPI.Extensions;
 using System.Text;
 using GymFlow.Application.Interfaces;
 using GymFlow.Application.UseCases.Auth;
+using GymFlow.Application.UseCases.Members;
 using GymFlow.Domain.Interfaces;
 using GymFlow.Infrastructure.Persistence.Repositories;
 using GymFlow.Infrastructure.Security;
@@ -37,6 +38,11 @@ public static class AuthExtensions
         services.AddScoped<CancelSaleUseCase>();
         services.AddScoped<GetAccessLogsUseCase>();
         services.AddScoped<ExportAccessLogsUseCase>();
+
+        // Use Cases — Membership Freeze (HU-07)
+        services.AddScoped<IMembershipFreezeRepository, MembershipFreezeRepository>();
+        services.AddScoped<FreezeMembershipUseCase>();
+        services.AddScoped<UnfreezeMembershipUseCase>();
 
         var secret   = config["Jwt:Secret"]   ?? throw new InvalidOperationException("Jwt:Secret not configured.");
         var issuer   = config["Jwt:Issuer"]   ?? "gymflow";
