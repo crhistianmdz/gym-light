@@ -22,9 +22,30 @@ Desarrollar una plataforma de gestión para gimnasios de alto tráfico que garan
 *   **Sincronización:** Motor de sincronización idempotente para subir logs locales al detectar red.
 *   **Auditoría Básica:** Registro de "quién hizo qué" (Logs de transacciones) para evitar fraudes en recepción.
 
-### HU-06 — Auditoría de Check-ins
-* **Retención de datos:** Logs conservados durante 3 años.
-* **Filtros disponibles:** Fecha (FromDate, ToDate), Recepcionista (performedByUserId), Socio (memberId), Resultado (Allowed, Denied).
-* **Exportación:** CSV implementado; exportación en PDF planificada para Fase 2.
-* **Restricciones de acceso:** Solo Admin y Owner tienen acceso al panel de auditoría.
-* **Validación:** Campo `performedByUserId` obligatorio en todo check-in, respondiendo con 400 Bad Request si está vacío o es Guid.Empty.
+### Fase 2: Fidelización y Gestión Avanzada
+*   **Módulo de Congelamiento (Reglas Estrictas):** 
+    *   Máximo 4 eventos por año calendario.
+    *   Mínimo 7 días por evento.
+    *   Bloqueo de acceso inmediato durante el periodo de congelación.
+    *   Extensión automática de la fecha de vencimiento (`EndDate`) sumando los días pausados.
+*   **Política de Cancelación:** Al cancelar, el socio mantiene el derecho de acceso hasta que su suscripción expire (Acceso Residual). No hay reembolsos parciales automáticos.
+*   **Seguimiento de Salud:** Registro de medidas antropométricas y gráficas de evolución física.
+*   **Rutinas Digitales:** Constructor de rutinas y seguimiento de cumplimiento para el socio.
+
+## 4. Reglas de Negocio Consolidadas
+1.  **Validación de Acceso:** No se permite el ingreso si la suscripción está vencida o congelada.
+2.  **Seguridad de Identidad:** La foto de perfil es un requisito técnico para habilitar el check-in.
+3.  **Prioridad de Datos:** En caso de conflicto entre local y nube, prevalece la **Autoridad del Servidor**.
+4.  **Idempotencia:** Cada transacción local genera un UUID (ClientGuid) único para evitar duplicados en la sincronización.
+5.  **Inventario:** El sistema debe impedir ventas offline si el stock local registrado es 0.
+
+## 5. Especificaciones Técnicas (Stack SSD)
+*   **Backend:** .NET 8 (Web API) con Clean Architecture.
+*   **Frontend:** React (PWA) con Service Workers.
+*   **Persistencia Local:** IndexedDB (vía Dexie.js).
+*   **Seguridad:** JWT (JSON Web Tokens) con Refresh Tokens en HttpOnly Cookies.
+
+## 6. Requerimientos No Funcionales
+*   **Disponibilidad:** Capacidad de operar offline para check-in y ventas por tiempo indefinido.
+*   **Rendimiento:** Latencia de respuesta en la interfaz de recepción inferior a 200ms.
+*   **Observabilidad:** Indicador visual de estado de sincronización (Sincronizado/Pendiente/Offline).
