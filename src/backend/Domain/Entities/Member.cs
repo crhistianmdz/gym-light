@@ -18,6 +18,8 @@ public class Member
     public string PhotoWebPUrl { get; private set; } = string.Empty;
 
     public MemberStatus Status { get; private set; }
+    public bool AutoRenewEnabled { get; private set; } = true;
+    public DateTime? CancelledAt { get; private set; }
     public DateOnly MembershipEndDate { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
@@ -64,7 +66,7 @@ public class Member
     /// Regla PRD §4.1: Frozen y Expired deniegan el acceso.
     /// </summary>
     public bool CanAccess() =>
-        Status == MemberStatus.Active && MembershipEndDate >= DateOnly.FromDateTime(DateTime.UtcNow);
+        (Status == MemberStatus.Active || Status == MemberStatus.Cancelled) && MembershipEndDate >= DateOnly.FromDateTime(DateTime.UtcNow);
 
     public string? GetDenialReason() => Status switch
     {
@@ -74,6 +76,20 @@ public class Member
                                     ? "La membresía ha expirado."
                                     : null
     };
+
+    public void Cancel()
+    {
+        if (Status == MemberStatus.Expired)
+            throw new DomainException("Cannot cancel an expired membership.");
+
+        AutoRenewEnabled = false;
+        CancelledAt = DateTime.UtcNow;
+
+        if (Status == MemberStatus.Active)
+            Status = MemberStatus.Cancelled;
+
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     public void Expire()
     {

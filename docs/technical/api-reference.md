@@ -332,6 +332,78 @@ Array vacío `[]` si el socio no tiene congelamientos.
 
 ---
 
+## POST /api/members/{id}/cancel
+
+Cancela la membresía de un socio. El acceso residual se mantiene hasta `MembershipEndDate`. No genera reembolsos automáticos.
+
+**Roles permitidos:** `Member` (solo su propio id), `Admin`, `Owner`
+
+### Path Params
+
+| Param | Tipo | Descripción |
+|---|---|---|
+| `id` | `Guid` | ID del socio a cancelar |
+
+### Request Body
+
+```json
+{
+  "clientGuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `clientGuid` | `Guid` | UUID v4 para idempotencia — doble envío retorna `200 OK` sin reprocesar |
+
+### Respuestas
+
+#### 200 OK — Cancelación aplicada (o idempotente)
+
+```json
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "fullName": "Juan Pérez",
+  "photoWebPUrl": "/photos/3fa85f64-5717-4562-b3fc-2c963f66afa6.webp",
+  "status": "Cancelled",
+  "membershipEndDate": "2026-12-31",
+  "autoRenewEnabled": false,
+  "cancelledAt": "2026-03-30T20:00:00Z"
+}
+```
+
+> Si el socio estaba `Frozen`, `status` retorna `"Frozen"` (la cancelación se aplica pero el bloqueo se mantiene).
+
+#### 400 Bad Request — Membresía ya vencida
+
+```json
+{
+  "title": "No se pudo cancelar la membresía.",
+  "detail": "Cannot cancel an expired membership.",
+  "status": 400
+}
+```
+
+#### 403 Forbidden — Rol insuficiente o Member intentando cancelar id ajeno
+
+#### 404 Not Found — Socio no encontrado
+
+#### 401 Unauthorized — Sin JWT
+
+### Curl de ejemplo — HU-08
+
+```bash
+# Cancelar membresía (Admin)
+curl -X POST https://localhost:5001/api/members/3fa85f64-5717-4562-b3fc-2c963f66afa6/cancel \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "clientGuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  }'
+```
+
+---
+
 ## Curl de ejemplo — HU-07
 
 ```bash

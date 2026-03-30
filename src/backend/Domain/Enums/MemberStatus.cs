@@ -6,7 +6,8 @@ namespace GymFlow.Domain.Enums;
 /// </summary>
 public enum MemberStatus
 {
-    Active,
-    Frozen,
-    Expired
+    Active    = 0,
+    Frozen    = 1,
+    Expired   = 2,
+    Cancelled = 3
 }

@@ -11,6 +11,7 @@ namespace GymFlow.WebAPI.Controllers;
 /// CRUD de socios.
 /// HU-02: POST /api/members — registro con foto WebP obligatoria.
 /// HU-07: POST/DELETE /api/members/{id}/freeze — congelamiento de membresía (Admin/Owner).
+/// HU-08: POST /api/members/{id}/cancel — cancelación con acceso residual.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -20,15 +21,18 @@ public class MembersController : ControllerBase
     private readonly RegisterMemberUseCase _registerMember;
     private readonly FreezeMembershipUseCase _freezeMembership;
     private readonly UnfreezeMembershipUseCase _unfreezeMembership;
+    private readonly CancelMembershipUseCase _cancelMembership;
 
     public MembersController(
         RegisterMemberUseCase registerMember,
         FreezeMembershipUseCase freezeMembership,
-        UnfreezeMembershipUseCase unfreezeMembership)
+        UnfreezeMembershipUseCase unfreezeMembership,
+        CancelMembershipUseCase cancelMembership)
     {
         _registerMember     = registerMember;
         _freezeMembership   = freezeMembership;
         _unfreezeMembership = unfreezeMembership;
+        _cancelMembership   = cancelMembership;
     }
 
     /// <summary>
@@ -120,10 +124,7 @@ public class MembersController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> Freeze(
-        Guid id,
-        [FromBody] FreezeRequestBody body,
-        CancellationToken ct)
+    public async Task<IActionResult> Freeze(Guid id, [FromBody] FreezeRequestBody body, CancellationToken ct)
     {
         var callerId = GetCurrentUserId();
         if (callerId is null)
@@ -141,6 +142,68 @@ public class MembersController : ControllerBase
                         Detail = result.Error,
                         Status = 400
                     }),
+            404 => NotFound(new ProblemDetails
+                    {
+                        Title  = "Socio no encontrado.",
+                        Detail = result.Error,
+                        Status = 404
+                    }),
+            _   => StatusCode(result.StatusCode, new ProblemDetails { Title = result.Error })
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // HU-08 — Cancelación con acceso residual
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// POST /api/members/{id}/cancel
+    ///
+    /// Cancela la membresía de un socio (sin reembolso). El socio conserva
+    /// acceso residual hasta su MembershipEndDate original.
+    ///
+    /// RBAC:
+    ///   - Member: solo puede cancelar su propio id.
+    ///   - Admin / Owner: pueden cancelar cualquier socio.
+    ///   - Receptionist / Trainer: 403 Forbidden.
+    ///
+    /// Idempotente via ClientGuid — si el guid ya fue procesado, retorna 200 sin reprocesar.
+    ///
+    /// Respuestas:
+    ///   200 OK          → cancelación aplicada o ya estaba cancelado (idempotente), retorna MemberDto
+    ///   400 Bad Request → membresía ya vencida (Expired)
+    ///   403 Forbidden   → rol insuficiente o Member intentando cancelar id ajeno
+    ///   404 Not Found   → socio no encontrado
+    /// </summary>
+    [HttpPost("{id:guid}/cancel")]
+    [AllowAnonymous]   // JWT sigue siendo validado manualmente — clase bloquea Member role
+    [ProducesResponseType(typeof(MemberDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CancelMembership(Guid id, [FromBody] CancelMembershipRequestDto body, CancellationToken ct)
+    {
+        var callerId = GetCurrentUserId();
+        if (callerId is null)
+            return Unauthorized();
+
+        var callerRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+
+        if (callerRole is "Receptionist" or "Trainer")
+            return Forbid();
+
+        var result = await _cancelMembership.ExecuteAsync(id, callerId.Value, callerRole, body, ct);
+
+        return result.StatusCode switch
+        {
+            200 => Ok(result.Value),
+            400 => BadRequest(new ProblemDetails
+                    {
+                        Title  = "No se pudo cancelar la membresía.",
+                        Detail = result.Error,
+                        Status = 400
+                    }),
+            403 => Forbid(),
             404 => NotFound(new ProblemDetails
                     {
                         Title  = "Socio no encontrado.",

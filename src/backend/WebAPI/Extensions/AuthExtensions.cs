@@ -39,10 +39,11 @@ public static class AuthExtensions
         services.AddScoped<GetAccessLogsUseCase>();
         services.AddScoped<ExportAccessLogsUseCase>();
 
-        // Use Cases — Membership Freeze (HU-07)
+        // Use Cases — Membership Freeze & Cancel (HU-07, HU-08)
         services.AddScoped<IMembershipFreezeRepository, MembershipFreezeRepository>();
         services.AddScoped<FreezeMembershipUseCase>();
         services.AddScoped<UnfreezeMembershipUseCase>();
+        services.AddScoped<CancelMembershipUseCase>();
 
         var secret   = config["Jwt:Secret"]   ?? throw new InvalidOperationException("Jwt:Secret not configured.");
         var issuer   = config["Jwt:Issuer"]   ?? "gymflow";

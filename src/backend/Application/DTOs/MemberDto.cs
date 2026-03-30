@@ -11,5 +11,7 @@ public record MemberDto(
     string FullName,
     string PhotoWebPUrl,
     MemberStatus Status,
-    DateOnly MembershipEndDate
+    DateOnly MembershipEndDate,
+    bool AutoRenewEnabled,
+    DateTime? CancelledAt
 );

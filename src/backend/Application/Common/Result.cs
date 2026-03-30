@@ -7,24 +7,25 @@ namespace GymFlow.Application.Common;
 public class Result<T>
 {
     public bool IsSuccess { get; }
+    public bool IsFailure => !IsSuccess;
     public T? Value { get; }
     public string? Error { get; }
     public int StatusCode { get; }
+    public string? Extra { get; private set; }
 
     private Result(bool isSuccess, T? value, string? error, int statusCode)
     {
-        IsSuccess = isSuccess;
-        Value = value;
-        Error = error;
+        IsSuccess  = isSuccess;
+        Value      = value;
+        Error      = error;
         StatusCode = statusCode;
-    public string? Extra { get; private set; }
-
-    public static Result<T> SuccessWithExtra(T value, string extra) =>
-        new Result<T>(true, value, null, 200) { Extra = extra };
-}
+    }
 
     public static Result<T> Success(T value) =>
         new(true, value, null, 200);
+
+    public static Result<T> SuccessWithExtra(T value, string extra) =>
+        new Result<T>(true, value, null, 200) { Extra = extra };
 
     public static Result<T> NotFound(string message) =>
         new(false, default, message, 404);
@@ -40,4 +41,7 @@ public class Result<T>
 
     public static Result<T> InternalError(string message) =>
         new(false, default, message, 500);
+
+    public static Result<T> Failure(string message, int statusCode) =>
+        new(false, default, message, statusCode);
 }
