@@ -131,7 +131,10 @@ export class SyncService {
   }
 
   async updateLocalCache(type: SyncEventType, data: Record<string, unknown>): Promise<void> {
-    if (type === 'Sale') {
+    if (type === 'CheckIn') {
+      const { memberId, lastCheckIn, status } = data as { memberId: string; lastCheckIn: string; status: string };
+      await db.users.update(memberId, { lastCheckIn, status });
+    } else if (type === 'Sale') {
       const sale = data as { id: string; clientGuid: string; status: string; total: number; timestamp: string; lines: Array<{ productId: string; quantity: number; unitPrice: number; subtotal: number; productName: string }> }
       await db.sales.put({
         id: sale.id,

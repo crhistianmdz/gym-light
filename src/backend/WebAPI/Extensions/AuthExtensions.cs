@@ -35,6 +35,8 @@ public static class AuthExtensions
         services.AddScoped<DeleteProductUseCase>();
         services.AddScoped<CreateSaleUseCase>();
         services.AddScoped<CancelSaleUseCase>();
+        services.AddScoped<GetAccessLogsUseCase>();
+        services.AddScoped<ExportAccessLogsUseCase>();
 
         var secret   = config["Jwt:Secret"]   ?? throw new InvalidOperationException("Jwt:Secret not configured.");
         var issuer   = config["Jwt:Issuer"]   ?? "gymflow";

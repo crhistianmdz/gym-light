@@ -36,6 +36,12 @@ public class ValidateAccessUseCase
         CheckInRequestDto request,
         CancellationToken ct = default)
     {
+        // Guard clause: PerformedByUserId required for traceability
+        if (request.PerformedByUserId == Guid.Empty || request.PerformedByUserId == default)
+            return Result<AccessValidationDto>.Failure(
+                "PerformedByUserId is required for check-in traceability.",
+                400);
+
         // ── Paso 1: Idempotencia ──────────────────────────────────────────────
         var existingLog = await _accessLogs.GetByClientGuidAsync(request.ClientGuid, ct);
         if (existingLog is not null)

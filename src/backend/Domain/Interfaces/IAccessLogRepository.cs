@@ -15,4 +15,7 @@ public interface IAccessLogRepository
 
     Task<AccessLog?> GetByClientGuidAsync(Guid clientGuid, CancellationToken ct = default);
     Task AddAsync(AccessLog accessLog, CancellationToken ct = default);
-}
+    Task<(IEnumerable<AccessLog> Items, int TotalCount)> GetPagedAsync(
+        AccessLogFilter filter, int page, int pageSize, CancellationToken ct = default);
+    }
+

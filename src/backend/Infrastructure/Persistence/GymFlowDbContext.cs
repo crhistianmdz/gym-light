@@ -67,7 +67,9 @@ public class GymFlowDbContext : DbContext
             e.HasKey(l => l.Id);
 
             // Índice UNIQUE sobre ClientGuid: garantiza idempotencia a nivel DB (RFC §4)
-            e.HasIndex(l => l.ClientGuid).IsUnique();
+            e.HasIndex(l => l.ClientGuid)
+             .IsUnique()
+             .HasDatabaseName("IX_AccessLogs_ClientGuid_Unique");
 
             e.Property(l => l.ClientGuid).IsRequired();
             e.Property(l => l.Timestamp).IsRequired();

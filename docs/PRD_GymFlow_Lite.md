@@ -22,22 +22,9 @@ Desarrollar una plataforma de gestión para gimnasios de alto tráfico que garan
 *   **Sincronización:** Motor de sincronización idempotente para subir logs locales al detectar red.
 *   **Auditoría Básica:** Registro de "quién hizo qué" (Logs de transacciones) para evitar fraudes en recepción.
 
-### Sincronización Automática (HU-04)
-
-**Motor de sync**: SyncService en app JS (no Service Worker). Corre dentro de la pestaña activa.
-
-**Disparadores**: Evento `window.online` + timer cada 5 minutos.
-
-**Estrategia**: Reintento individual — cada evento de `sync_queue` se envía contra su endpoint original.
-
-**Idempotencia**: El servidor responde `200 OK` con `{ alreadyProcessed: true, data: <entidad> }` cuando recibe un `ClientGuid` ya procesado. El cliente elimina el item de la cola y re-hidrata su cache local con `data`.
-
-**Política de reintentos**: Máximo 3 intentos por item. Al superar el límite, el item se mueve individualmente a `error_queue`. La cola continúa procesando el resto.
-
-**Locking multi-tab**: Un flag en `db.metadata` (`syncLock: boolean`) evita que múltiples pestañas procesen la cola simultáneamente.
-
-**Token caducado**: Si el servidor responde `401`, SyncService pausa la cola y notifica la UI para re-login. Reanuda automáticamente tras autenticación exitosa.
-
-**Reconciliación**: El servidor es autoritativo. Cada respuesta exitosa incluye la entidad actualizada. El cliente sobreescribe su cache local con esos valores.
-
-**Error-tray**: Items en `error_queue` son visibles para Admin/Owner. Pueden ser reintentados manualmente o descartados.
+### HU-06 — Auditoría de Check-ins
+* **Retención de datos:** Logs conservados durante 3 años.
+* **Filtros disponibles:** Fecha (FromDate, ToDate), Recepcionista (performedByUserId), Socio (memberId), Resultado (Allowed, Denied).
+* **Exportación:** CSV implementado; exportación en PDF planificada para Fase 2.
+* **Restricciones de acceso:** Solo Admin y Owner tienen acceso al panel de auditoría.
+* **Validación:** Campo `performedByUserId` obligatorio en todo check-in, respondiendo con 400 Bad Request si está vacío o es Guid.Empty.

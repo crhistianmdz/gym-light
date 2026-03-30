@@ -63,7 +63,7 @@ export function CheckInPanel({ currentUserId }: CheckInPanelProps) {
 
         <button
           type="submit"
-          disabled={loading || !memberId.trim()}
+          disabled={loading || !memberId.trim() || !currentUserId.trim()}
           style={{
             marginTop: 12,
             width: '100%',
@@ -111,7 +111,22 @@ export function CheckInPanel({ currentUserId }: CheckInPanelProps) {
       )}
 
       {/* Error del sistema */}
-      {status === 'error' && error && (
+      {(!currentUserId.trim() && (
+        <div
+          role='alert'
+          style={{
+            marginTop: 16,
+            padding: 12,
+            backgroundColor: '#fff3e0',
+            border: '1px solid #ff9800',
+            borderRadius: 6,
+            fontSize: 14,
+            color: '#e65100',
+          }}
+        >
+          ⚠️ No se puede registrar el acceso: sesión sin usuario identificado. Por favor, cerrá sesión e ingresá nuevamente.
+        </div>
+      )) || (status === 'error' && error && (
         <div
           role="alert"
           style={{

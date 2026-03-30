@@ -38,9 +38,14 @@ const NETWORK_TIMEOUT_MS = 2000 // RFC §3: timeout >2s activa fallback offline
  *   CA-3: Encola AccessLog en sync_queue con ClientGuid
  */
 export async function checkInMember(
+  performedByUserId?: string,
   memberId: string,
   performedByUserId: string,
 ): Promise<AccessResult> {
+  if (!performedByUserId || performedByUserId === '00000000-0000-0000-0000-000000000000') {
+    throw new Error('performedByUserId is required for check-in traceability');
+  }
+
   const clientGuid = crypto.randomUUID() // PRD §4.4: UUID v4 por transacción
 
   try {

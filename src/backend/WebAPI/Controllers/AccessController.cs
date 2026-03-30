@@ -35,6 +35,7 @@ public class AccessController : ControllerBase
     ///   404 Not Found       → socio no encontrado
     /// </summary>
     [HttpPost("checkin")]
+[ServiceFilter(typeof(IdempotencyFilter))]
     [ProducesResponseType(typeof(AccessValidationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
