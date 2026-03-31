@@ -66,6 +66,7 @@ export function SalePanel() {
         </TableHead>
         <TableBody>
           {products.map(product => (
+          <ProductRow key={product.id} product={product} onAddLine={handleAddLine} />
             <TableRow key={product.id}>
               <TableCell>{product.name}</TableCell>
               <TableCell>{product.stock}</TableCell>

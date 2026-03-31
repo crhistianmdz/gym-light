@@ -11,4 +11,6 @@ public interface ISaleRepository
     Task<Sale?> GetByClientGuidAsync(Guid clientGuid, CancellationToken ct = default);
     Task AddAsync(Sale sale, CancellationToken ct = default);
     Task UpdateAsync(Sale sale, CancellationToken ct = default);
+    Task<(IReadOnlyList<Sale> Items, int TotalCount)> GetAllPagedAsync(
+        int page, int pageSize, CancellationToken ct = default);
 }

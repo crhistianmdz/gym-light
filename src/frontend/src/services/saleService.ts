@@ -58,11 +58,12 @@ export const saleService = {
     },
 
     async createSale(request: CreateSaleRequest): Promise<void> {
-        const clientGuid = crypto.randomUUID();
+        // Eliminación de clientGuid interno, usar el recibido
+// Eliminado: const clientGuid = crypto.randomUUID();
         try {
             const response = await fetchWithAuth('/api/sales', {
                 method: 'POST',
-                headers: { 'X-Client-Guid': clientGuid },
+                headers: { 'X-Client-Guid': request.clientGuid },
                 body: JSON.stringify(request),
             });
             if (!response.ok) throw new Error("Couldn't create sale");
@@ -88,4 +89,45 @@ export const saleService = {
             });
         }
     },
+  async getSales(page: number, pageSize: number): Promise<{ data: SaleResponse[]; total: number }> {
+    try {
+      const response = await fetchWithAuth(`/api/sales?page=${page}&pageSize=${pageSize}`);
+      if (!response.ok) {
+        throw new Error('Error al obtener ventas.');
+      }
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.warn('Error de red, cargando datos offline', error);
+      const offlineSales = await db.sales
+        .orderBy('timestamp')
+        .reverse()
+        .offset((page - 1) * pageSize)
+        .limit(pageSize)
+        .toArray();
+      const total = await db.sales.count();
+      return { data: offlineSales, total };
+    }
+  },
+
+  async cancelSale(saleId: string): Promise<void> {
+    try {
+      const response = await fetchWithAuth(`/api/sales/${saleId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Error al cancelar venta.');
+      }
+      await db.sales.update(saleId, { status: 'cancelled' });
+    } catch (error) {
+      console.warn('Error de red al cancelar venta, encolando acción', error);
+      await db.sync_queue.add({
+        guid: crypto.randomUUID(), // Generar nuevo UUID
+        type: 'SaleCancel',
+        payload: JSON.stringify({ id: saleId }),
+        timestamp: Date.now(),
+        retryCount: 0,
+      });
+      await db.sales.update(saleId, { status: 'cancelled' });
+      throw new Error('OFFLINE_QUEUED');
+    }
+  },
 };

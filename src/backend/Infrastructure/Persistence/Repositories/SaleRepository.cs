@@ -10,7 +10,20 @@ using System.Threading.Tasks;
 /// <summary>
 /// Implementación del repositorio para la entidad Sale.
 /// </summary>
-public class SaleRepository : ISaleRepository
+ public class SaleRepository : ISaleRepository
+ {
+    public async Task<(IReadOnlyList<Sale> Items, int TotalCount)> GetAllPagedAsync(
+        int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = _context.Sales
+            .OrderByDescending(S => S.Timestamp);
+
+Total Count..
+
+(TItems Queries).);
+
+More.
+
 {
     private readonly GymFlowDbContext _context;
 

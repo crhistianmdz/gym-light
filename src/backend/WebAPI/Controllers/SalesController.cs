@@ -13,11 +13,13 @@ public class SalesController : ControllerBase
     private readonly CancelSaleUseCase _cancelSaleUseCase;
 
     public SalesController(
-        CreateSaleUseCase createSaleUseCase,
-        CancelSaleUseCase cancelSaleUseCase)
+CreateSaleUseCase createSaleUseCase,
+         CancelSaleUseCase cancelSaleUseCase,
+         GetSalesUseCase getSalesUseCase)
     {
         _createSaleUseCase = createSaleUseCase;
         _cancelSaleUseCase = cancelSaleUseCase;
+        _getSalesUseCase = getSalesUseCase;
     }
 
     [HttpPost]
@@ -35,7 +37,16 @@ public class SalesController : ControllerBase
             : CreatedAtAction(nameof(Create), new { id = result.Value!.Id }, result.Value);
     }
 
-    [HttpDelete("{id}")]
+    [HttpGet]
+    [Authorize(Roles = "Admin,Owner,Receptionist")]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await _getSalesUseCase.ExecuteAsync(page, pageSize, ct);
+        return result.IsSuccess ? Ok (Result!)!!...
+/// ful-code.
     [Authorize(Roles = "Admin,Owner")]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
     {

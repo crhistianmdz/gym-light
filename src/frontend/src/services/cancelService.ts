@@ -36,7 +36,7 @@ export async function cancelMembership(memberId: string): Promise<CancelMembersh
     return result
   } catch {
     // Encolar offline y actualizar IndexedDB de manera optimista
-    await db.sync_queue.add({ guid: clientGuid, type: 'MemberUpdate', timestamp: Date.now(), payload: { memberId, action: 'cancel', clientGuid } })
+    await db.sync_queue.add({ guid: clientGuid, type: 'SaleCancel', timestamp: Date.now(), payload: { id: memberId, action: 'cancel', clientGuid } })
     await db.users.where('id').equals(memberId).modify({ autoRenewEnabled: false, status: 'Cancelled', cancelledAt: new Date().toISOString() })
 
     throw new Error('OFFLINE_QUEUED')

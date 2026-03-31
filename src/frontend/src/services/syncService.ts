@@ -10,7 +10,7 @@ const ENDPOINT_MAP: Record<SyncEventType, { url: (payload: Record<string, any>) 
   MemberUpdate: { url: (payload: Record<string, any>) => `/api/members/${payload['memberId']}/cancel`, method: 'POST' },
   CheckIn: { url: () => '/api/checkin', method: 'POST' },
   Sale: { url: () => '/api/sales', method: 'POST' },
-  SaleCancel: { url: () => '/api/sales', method: 'DELETE' },
+  SaleCancel: { url: (payload: Record<string, any>) => `/api/sales/${payload.id}`, method: 'DELETE' },
   HealthUpdate: { url: () => '/api/members/measurements', method: 'POST' },
   WorkoutLogCreate: { url: () => '/api/workout-logs', method: 'POST' },
 }

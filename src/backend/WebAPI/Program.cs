@@ -1,3 +1,8 @@
+// HU-03: Ventas
+builder.Services.AddScoped<CreateSaleUseCase>();
+builder.Services.AddScoped<GetSalesUseCase>();
+builder.Services.AddScoped<CancelSaleUseCase>();
+
 // HU-11: Rutinas Digitales
 builder.Services.AddScoped<CreateExerciseUseCase>();
 builder.Services.AddScoped<GetExercisesUseCase>();
