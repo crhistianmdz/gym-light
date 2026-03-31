@@ -45,6 +45,23 @@
 - PRIMARY KEY (Id)
 - INDEX IX_MembershipFreezes_MemberId_StartDate (MemberId, StartDate)
 
+### Payments
+| Columna | Tipo | Constraints |
+|---------|------|-------------|
+| Id | UUID | PK |
+| GymId | UUID | NOT NULL, FK → Gyms(Id) |
+| MemberId | UUID | NULL, FK → Members(Id) |
+| ClientGuid | UUID | NOT NULL, UNIQUE |
+| Amount | DECIMAL(18,2) | NOT NULL, CHECK > 0 |
+| Category | SMALLINT | NOT NULL (0=Membership, 1=POS) |
+| Date | TIMESTAMP | NOT NULL |
+| Description | VARCHAR(500) | NULL |
+| CreatedAt | TIMESTAMP | NOT NULL, DEFAULT NOW() |
+
+Índices:
+- IX_Payments_ClientGuid — UNIQUE (para idempotencia)
+- IX_Payments_GymId_Date — para queries de ingresos por período
+
 ### Otros
 Para las demás tablas (`Products`, `BodyMeasurements`, etc.) se puede extrapolar el formato similar visto en el contexto.
 

@@ -17,17 +17,34 @@
 ├── WebAPI/                 ← Proyecto principal del backend (Controllers y configuración)
 │   ├── Program.cs          ← Punto de entrada de la aplicación WebAPI
 │   ├── Controllers/        ← Controladores para manejar las rutas HTTP
+│   │   ├── Admin/          ← Controladores específicos del rol admin
+│   │   │   ├── MetricsController.cs
+│   │   ├── PaymentsController.cs
 ├── Application/            ← Contiene lógica de negocio, DTOs y validaciones
 │   ├── UseCases/           ← Casos de uso específicos del negocio
+│   │   ├── Admin/          ← Casos de uso para administración
+│   │   │   ├── RegisterPaymentUseCase.cs
+│   │   │   ├── GetIncomeReportUseCase.cs
+│   │   │   ├── GetChurnReportUseCase.cs
 │   ├── DTOs/               ← Objeto de transferencia de datos
+│   │   ├── Metrics/
+│   │   │   ├── PaymentDto.cs
+│   │   │   ├── RegisterPaymentRequest.cs
+│   │   │   ├── IncomeReportDto.cs
+│   │   │   ├── MonthlyBreakdownDto.cs
+│   │   │   ├── ChurnReportDto.cs
 │   └── Validators/         ← Validaciones de entrada
 ├── Domain/                 ← Entidades, enumeraciones e interfaces del dominio
 │   ├── Entities/           ← Modelos principales del dominio
+│   │   ├── Payment.cs
 │   ├── Enums/              ← Enumeraciones para clasificaciones
+│   │   ├── PaymentCategory.cs
 │   └── Interfaces/         ← Interfaces para repositorios
 ├── Infrastructure/         ← Implementaciones de persistencia y servicios externos
 │   ├── Migrations/         ← Migraciones EF Core para la base de datos
 │   ├── Persistence/        ← Configuración de EF Core, repositorios y seeding
+│   │   ├── Repositories/
+│   │   │   ├── PaymentRepository.cs
 │   └── Security/           ← Configuración de servicios de seguridad como JWT
 ├── Tests/                  ← Pruebas unitarias y de integración
     ├── Domain/             ← Pruebas enfocadas a la lógica de dominio
@@ -41,11 +58,16 @@
 ├── src/                    ← Código fuente de la app React
 │   ├── db/                 ← Base local IndexedDB usando Dexie.js
 │   ├── services/           ← Servicios para lógica de red y sincronización
+│   │   ├── dashboardService.ts
 │   ├── components/         ← Componentes reutilizables
 │   │   ├── RoutineBuilder/ ← Constructor de rutinas
 │   │   ├── MemberRoutines/ ← Visualización de rutinas personales
 │   │   ├── ProgressChart/  ← Componente de gráficos de progreso
+│   │   ├── Dashboard/
+│   │   │   ├── IncomeChart.tsx
+│   │   │   ├── ChurnStats.tsx
 │   └── pages/              ← Vistas principales de la app
+│   │   ├── DashboardPage.tsx
 ├── vite.config.ts          ← Configuración del bundler
 ├── tsconfig.node.json      ← Configuración de TypeScript para NodeJS
 ├── package.json            ← Dependencias de frontend

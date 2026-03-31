@@ -12,4 +12,4 @@ public interface IMemberRepository
     Task<IReadOnlyList<Member>> GetAllActiveAsync(CancellationToken ct = default);
     Task AddAsync(Member member, CancellationToken ct = default);
     Task UpdateAsync(Member member, CancellationToken ct = default);
-}
+Task<(int TotalMembers, int ActiveMembers, int NotRenewed)> GetChurnStatsAsync(int year, CancellationToken ct = default);

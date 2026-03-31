@@ -79,6 +79,19 @@ Para asegurar la integridad entre el cliente y el servidor:
 *   **Stock autoritativo:** En caso de divergencia entre stock local y stock del servidor, el servidor siempre gana. Al confirmar una venta o al sincronizar, el frontend sobrescribe el stock local con el valor del servidor.
 *   **Migración de Datos:** Cada respuesta de la API incluirá un header `X-Data-Version`. Si `X-Data-Version > metadata.dataVersion`, el cliente disparará una limpieza de IndexedDB y descargará los datos maestros de nuevo para evitar errores de esquema.
 
+### Decisión: Entidad Payment separada de Sale (HU-12)
+
+- **Contexto**: Para el Dashboard de Métricas se necesitaba calcular ingresos por categoría (Planes de membresía vs ventas POS). La entidad `Sale` ya existía para ventas de productos del local.
+- **Opciones evaluadas**:
+  - Opción A: Nueva entidad `Payment` independiente (aprobada)
+  - Opción B: Agregar campo `Category` a `Sale` (rechazada — mezcla semántica)
+- **Decisión**: Crear entidad `Payment` separada que representa cobros de membresías y servicios, mientras `Sale` sigue siendo para productos físicos del POS.
+- **Consecuencias**:
+  - `Payment` tiene `ClientGuid` para idempotencia (mismo patrón que otras escrituras offline)
+  - `PaymentCategory` enum: `Membership = 0`, `POS = 1`
+  - Endpoints: `POST /api/payments`, `GET /api/admin/metrics/income`, `GET /api/admin/metrics/churn`
+  - Solo `Owner` y `Admin` acceden a métricas. `Receptionist` puede registrar pagos.
+
 ## 5. Reglas de Negocio Técnicas
 *   **MembershipService (.NET):** 
     *   Validación de Congelamiento: `count < 4` por año y `duration >= 7` días.

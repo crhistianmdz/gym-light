@@ -192,8 +192,39 @@ La `sync_queue` procesa eventos de tipo: `CheckIn`, `Sale`, `SaleCancel`, `Membe
    - `Trainer`, `Admin`, `Owner`: pueden crear, editar y asignar rutinas a cualquier socio.
 10. Sin límite de historial de WorkoutLogs en esta versión.
 
-### HU-12: Dashboard de Métricas (Dueño)
-**Como** Dueño, **quiero** ver el flujo de caja y la tasa de deserción (Churn Rate), **para** tomar decisiones estratégicas.
-* **Criterios de Aceptación:**
-    1. Reporte de ingresos mensuales detallado por categoría (Planes vs POS).
-    2. Comparativa de socios activos vs. socios que no renovaron.
+### HU-12: Dashboard de Métricas para el Dueño
+
+**Como** dueño o administrador del gimnasio,  
+**quiero** ver un dashboard con ingresos mensuales y tasa de churn,  
+**para** tomar decisiones de negocio basadas en datos reales.
+
+**Criterios de aceptación:**
+
+1. **RBAC**: Solo usuarios con rol `Owner` o `Admin` pueden acceder al dashboard. Otros roles son redirigidos.
+
+2. **Reporte de Ingresos (`GET /api/admin/metrics/income?year={year}`):**
+   - Devuelve desglose mensual de ingresos para el año solicitado
+   - Cada mes contiene: `month` (1-12), `membershipIncome` (decimal), `posIncome` (decimal), `total` (decimal)
+   - Filtra por `GymId` del usuario autenticado
+   - Si `year` no se especifica, usa el año actual
+
+3. **Reporte de Churn (`GET /api/admin/metrics/churn?year={year}`):**
+   - Devuelve: `year`, `activeMembers`, `churnedMembers`, `churnRate` (porcentaje, 0-100)
+   - **Fórmula ChurnRate**: `(churnedMembers / (activeMembers + churnedMembers)) * 100`
+   - `churnedMembers` = socios que tuvieron membresía activa en el año pero no la renovaron
+   - Si no hay socios, `churnRate = 0` (no dividir por cero)
+   - Año mínimo válido: 2020. Año máximo: año actual.
+
+4. **Registro de Pago (`POST /api/payments`):**
+   - Accesible por `Owner`, `Admin`, `Receptionist`
+   - Body: `{ memberId?, amount, category (0=Membership|1=POS), date, description?, clientGuid }`
+   - Idempotente: si `clientGuid` ya existe, devuelve el pago existente sin reprocesar
+   - `amount` debe ser > 0
+
+5. **Offline:**
+   - El dashboard carga datos desde caché local (IndexedDB) si no hay conexión
+   - Se muestra un banner indicando que los datos pueden estar desactualizados
+
+6. **UI:**
+   - Ingresos: gráfico de barras agrupado (Membresías en azul, POS en naranja) por mes
+   - Churn: 4 cards con `activeMembers`, `churnedMembers`, `churnRate`, color de alerta si churnRate > 20%

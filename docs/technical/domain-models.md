@@ -65,6 +65,21 @@ Este documento contiene un mapeo de los modelos de dominio utilizados en el back
 | Quantity      | int    | Cantidad vendida                         |
 | UnitPrice     | decimal | Precio unitario                          |
 
+### Pagos
+
+#### Payment
+| Propiedad    | Tipo          | Descripción                                                   |
+|--------------|---------------|---------------------------------------------------------------|
+| Id           | Guid          | PK                                                            |
+| GymId        | Guid          | FK a Gym                                                     |
+| MemberId     | Guid?         | FK a Member (nullable — pagos POS pueden no tener socio)      |
+| ClientGuid   | Guid          | UUID generado desde el cliente, garantiza idempotencia       |
+| Amount       | decimal       | Monto (> 0)                                                  |
+| Category     | PaymentCategory | Categoría del pago                                           |
+| Date         | DateTime      | Fecha del pago                                               |
+| Description  | string?       | Descripción opcional                                         |
+| CreatedAt    | DateTime      | Fecha de creación del registro                               |
+
 ### Rutinas
 
 #### ExerciseCatalog
@@ -138,6 +153,8 @@ RoutineExercise 1──* WorkoutExerciseEntry
 ExerciseCatalog 1──* RoutineExercise (opcional)
 Sale 1──* SaleLine
 Product 1──* SaleLine
+Gym 1──* Payment
+Member 1──* Payment (opcional)
 ```
 
 ## Enums
@@ -150,6 +167,10 @@ Product 1──* SaleLine
 ### SaleStatus
 - Active
 - Cancelled
+
+### PaymentCategory
+- Membership = 0
+- POS = 1
 
 ## Value Objects
 

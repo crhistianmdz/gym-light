@@ -22,12 +22,12 @@
 | 09  | Perfil Antropométrico         | ✅      | ✅       | ✅    | Completa |       |
 | 10  | Visualización de Progreso     | ✅      | ✅       | ✅    | Completa |       |
 | 11  | Asignación de Rutinas         | ✅      | ✅       | ✅    | Completa |       |
+| 12  | Dashboard de Métricas         | ✅      | ✅       | ✅    | Completa |       |
 
 ## HUs pendientes
 
 | HU  | Nombre                        | Prioridad PRD |
 |-----|-------------------------------|---------------|
-| 12  | Dashboard de Métricas         | Fase 2        |
 
 ## Fixes recientes
 

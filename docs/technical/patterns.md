@@ -141,7 +141,72 @@ Reglas:
 
 ---
 
-## 8. Convenciones de Código
+## 8. Patrón Repository (Backend)
+
+### Interface (Domain layer):
+```csharp
+// Domain/Interfaces/IPaymentRepository.cs
+public interface IPaymentRepository
+{
+    Task<Payment?> GetByClientGuidAsync(Guid clientGuid);
+    Task<bool> ClientGuidExistsAsync(Guid clientGuid);
+    Task AddAsync(Payment payment);
+    Task<IEnumerable<MonthlyAggregateRow>> GetMonthlyIncomeAsync(Guid gymId, int year);
+}
+```
+
+### Implementación (Infrastructure layer):
+```csharp
+// Infrastructure/Persistence/Repositories/PaymentRepository.cs
+public class PaymentRepository : IPaymentRepository
+{
+    private readonly GymFlowDbContext _db;
+    public PaymentRepository(GymFlowDbContext db) => _db = db;
+
+    public Task<bool> ClientGuidExistsAsync(Guid clientGuid) =>
+        _db.Payments.AnyAsync(p => p.ClientGuid == clientGuid);
+
+    public Task<Payment?> GetByClientGuidAsync(Guid clientGuid) =>
+        _db.Payments.FirstOrDefaultAsync(p => p.ClientGuid == clientGuid);
+
+    public async Task AddAsync(Payment payment)
+    {
+        await _db.Payments.AddAsync(payment);
+        await _db.SaveChangesAsync();
+    }
+    // ...
+}
+```
+
+### Inyección en UseCase:
+```csharp
+// Application/UseCases/Admin/RegisterPaymentUseCase.cs
+public class RegisterPaymentUseCase
+{
+    private readonly IPaymentRepository _payments;
+    public RegisterPaymentUseCase(IPaymentRepository payments) => _payments = payments;
+
+    public async Task<Result<PaymentDto>> ExecuteAsync(RegisterPaymentRequest req)
+    {
+        if (await _payments.ClientGuidExistsAsync(req.ClientGuid))
+        {
+            var existing = await _payments.GetByClientGuidAsync(req.ClientGuid);
+            return Result.Ok(existing!.ToDto());
+        }
+        // ... crear y guardar
+    }
+}
+```
+
+### Registro en DI (Program.cs):
+```csharp
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<RegisterPaymentUseCase>();
+```
+
+---
+
+## 9. Convenciones de Código
 
 ### Backend — C# / .NET 8
 
@@ -183,7 +248,7 @@ const data: any = {}
 
 ---
 
-## 9. Persistencia Local — Reglas
+## 10. Persistencia Local — Reglas
 
 - **Prohibido `localStorage`** para datos de socios o transacciones. Solo IndexedDB.
 - Solicitar `navigator.storage.persist()` al inicializar la app (HU-05).
@@ -191,7 +256,7 @@ const data: any = {}
 
 ---
 
-## 10. Offline / Red — Reglas
+## 11. Offline / Red — Reglas
 
 Estrategia Network-First obligatoria:
 

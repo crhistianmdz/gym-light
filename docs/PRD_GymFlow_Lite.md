@@ -17,10 +17,11 @@ Desarrollar una plataforma de gestión para gimnasios de alto tráfico que garan
 ### Fase 1: MVP & Operación Core
 *   **Gestión de Usuarios:** Registro con captura de foto obligatoria (WebP) para validación de identidad.
 *   **Control de Acceso Offline:** Validación contra caché local (IndexedDB) en <200ms.
-*   **Suscripciones y Pagos:** Ciclo de vida de membresías (Activa/Vencida) con registro de confirmación externa.
+*   **Suscripciones y Pagos:** Ciclo de vida de membresías (Activa/Vencida) con registro de confirmación externa. Los cobros de membresías y servicios se registran como `Payment` (separado de `Sale`, que corresponde a ventas de productos físicos del POS). Cada `Payment` tiene una categoría (`Membership` o `POS`) que permite generar reportes de ingresos desglosados.
 *   **Punto de Venta (POS):** Venta de productos con **alerta de stock crítico al alcanzar el 20%**.
 *   **Sincronización:** Motor de sincronización idempotente para subir logs locales al detectar red.
 *   **Auditoría Básica:** Registro de "quién hizo qué" (Logs de transacciones) para evitar fraudes en recepción.
+*   **HU-12 — Dashboard de Métricas:** Dashboard para Owner/Admin con reporte de ingresos mensuales por categoría (Membresías vs POS) y tasa de churn (socios que no renovaron). Solo accesible por roles Owner y Admin.
 
 ### Fase 2: Fidelización y Gestión Avanzada
 *   **Módulo de Congelamiento (Reglas Estrictas):** 

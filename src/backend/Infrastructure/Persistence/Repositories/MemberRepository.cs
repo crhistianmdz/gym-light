@@ -33,4 +33,17 @@ public class MemberRepository : IMemberRepository
         _context.Members.Update(member);
         await _context.SaveChangesAsync(ct);
     }
+
+    public async Task<(int TotalMembers, int ActiveMembers, int NotRenewed)> GetChurnStatsAsync(int year, CancellationToken ct = default)
+    {
+        var totalMembers = await _context.Members.CountAsync(ct);
+
+        var activeMembers = await _context.Members
+            .CountAsync(m => m.Status == MemberStatus.Active, ct);
+
+        var notRenewed = await _context.Members
+            .CountAsync(m => !m.AutoRenewEnabled && m.MembershipEndDate < DateTime.UtcNow, ct);
+
+        return (totalMembers, activeMembers, notRenewed);
+    }
 }

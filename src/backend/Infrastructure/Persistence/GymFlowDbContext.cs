@@ -208,5 +208,17 @@ public class GymFlowDbContext : DbContext
             e.HasIndex(b => new { b.MemberId, b.RecordedAt }).HasDatabaseName("IX_BodyMeasurements_MemberId_RecordedAt");
             e.HasOne(b => b.Member).WithMany().HasForeignKey(b => b.MemberId).OnDelete(DeleteBehavior.Cascade);
         });
+        modelBuilder.Entity<Payment>(e =>
+        {
+            e.ToTable("Payments");
+            e.HasKey(p => p.Id);
+            e.HasIndex(p => p.ClientGuid).IsUnique().HasDatabaseName("IX_Payments_ClientGuid");
+            e.HasIndex(p => p.Timestamp).HasDatabaseName("IX_Payments_Timestamp");
+            e.HasIndex(p => new { p.MemberId, p.Timestamp }).HasDatabaseName("IX_Payments_MemberId_Timestamp");
+            e.Property(p => p.Amount).HasColumnType("decimal(18,2)").IsRequired();
+            e.Property(p => p.Category).HasConversion<int>().IsRequired();
+            e.Property(p => p.Notes).HasMaxLength(500);
+            e.HasOne<AppUser>().WithMany().HasForeignKey(p => p.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
     }
-}
+    public DbSet<Payment> Payments { get; set; }
