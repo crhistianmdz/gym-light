@@ -138,3 +138,72 @@ export function RoutinesPage() {
 Reglas:
 - Funcional, TypeScript estricto, sin `any`
 - Imports absolutos con alias `@/`
+
+---
+
+## 8. Convenciones de Código
+
+### Backend — C# / .NET 8
+
+- **Naming:** PascalCase para clases, métodos y propiedades. camelCase para variables locales y parámetros.
+- **DTOs:** Sufijo `Dto` (e.g. `MemberDto`, `CheckInRequestDto`). Definidos en la capa `Application`.
+- **Interfaces:** Prefijo `I` (e.g. `IMemberRepository`, `ISyncService`).
+- **Async:** Todos los métodos de I/O deben ser `async Task<T>`. Sufijo `Async` obligatorio.
+- **Validación:** FluentValidation en la capa `Application`. Nunca validar en controllers.
+- **Errores:** Usar `Result<T>` pattern o excepciones de dominio tipadas. No lanzar `Exception` genérica.
+- **Idempotencia:** Todo endpoint que reciba datos de la cola de sync debe aceptar `ClientGuid` (UUID v4) y estar protegido por `IdempotencyFilter`.
+
+```csharp
+// ✅ Correcto
+public async Task<Result<MemberDto>> GetMemberByIdAsync(Guid memberId, CancellationToken ct)
+
+// ❌ Incorrecto
+public MemberDto GetMember(int id)
+```
+
+### Frontend — React / TypeScript
+
+- **Naming:** PascalCase para componentes. camelCase para funciones, variables y hooks. UPPER_SNAKE_CASE para constantes.
+- **Archivos:** Un componente por archivo. El nombre del archivo = nombre del componente (e.g. `CheckInPanel.tsx`).
+- **Tipos:** TypeScript estricto (`strict: true`). Prohibido `any`. Usar `unknown` + type guard si es necesario.
+- **Imports:** Absolutos con alias `@/` para `src/`. Orden: librerías externas → internos de `@/` → relativos → tipos.
+- **Hooks:** Custom hooks en `src/hooks/`. Prefijo `use` obligatorio.
+- **Estado local:** `useState` / `useReducer`. Para estado global/server, definir estrategia en RFC antes de implementar.
+- **Componentes:** Funcionales siempre. Sin class components.
+
+```tsx
+// ✅ Correcto
+import { useState } from 'react'
+import type { Member } from '@/types/member'
+
+// ❌ Incorrecto
+import * as React from 'react'
+const data: any = {}
+```
+
+---
+
+## 9. Persistencia Local — Reglas
+
+- **Prohibido `localStorage`** para datos de socios o transacciones. Solo IndexedDB.
+- Solicitar `navigator.storage.persist()` al inicializar la app (HU-05).
+- Limpiar `sync_queue` únicamente tras confirmación exitosa del servidor.
+
+---
+
+## 10. Offline / Red — Reglas
+
+Estrategia Network-First obligatoria:
+
+```
+Request API
+  ├─ Online → fetch() → actualizar store local → responder
+  └─ Offline / timeout >2s → consultar IndexedDB → encolar en sync_queue → responder
+```
+
+- Retry automático cada **5 minutos** o al evento `online`.
+- Si un registro falla **3 veces** → moverlo a "Bandeja de Errores" para revisión manual.
+- Header `X-Data-Version` en cada respuesta: si es mayor a `metadata.dataVersion`, limpiar IndexedDB y re-descargar snapshot.
+- Todo código I/O (red o IndexedDB) debe tener `try/catch` con fallback offline explícito.
+- Prohibido silenciar errores de red con `catch (e) {}`.
+- El indicador de sincronización en la UI debe reflejar: Verde (sincronizado) / Naranja (pendientes) / Gris (offline).

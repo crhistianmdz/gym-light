@@ -23,14 +23,14 @@ public class SaleRepository : ISaleRepository
         await _context.Sales.Include(s => s.Lines).ThenInclude(l => l.Product).FirstOrDefaultAsync(s => s.Id == id, ct);
 
     public async Task<bool> ClientGuidExistsAsync(Guid clientGuid, CancellationToken ct = default) =>
-        await _context.Sales.AnyAsync(s => s.ClientGuid == clientGuid, ct);
+
 
     public async Task<Sale?> GetByClientGuidAsync(Guid clientGuid, CancellationToken ct) =>
         await _context.Sales
             .Include(s => s.Lines)
             .ThenInclude(l => l.Product)
             .FirstOrDefaultAsync(s => s.ClientGuid == clientGuid, ct);
-        await _context.Sales.AnyAsync(s => s.ClientGuid == clientGuid, ct);
+
 
     public async Task AddAsync(Sale sale, CancellationToken ct = default)
     {

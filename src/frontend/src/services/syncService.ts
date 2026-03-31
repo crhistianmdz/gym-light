@@ -7,6 +7,7 @@ const SYNC_LOCK_KEY = 'syncLock' // This key prevents concurrent sync processes
 const REQUEST_TIMEOUT_MS = 10000 // 10 seconds
 
 const ENDPOINT_MAP: Record<SyncEventType, { url: (payload: Record<string, any>) => string; method: string }> = {
+  MemberUpdate: { url: (payload: Record<string, any>) => `/api/members/${payload['memberId']}/cancel`, method: 'POST' },
   CheckIn: { url: () => '/api/checkin', method: 'POST' },
   Sale: { url: () => '/api/sales', method: 'POST' },
   SaleCancel: { url: () => '/api/sales', method: 'DELETE' },
@@ -107,7 +108,15 @@ export class SyncService {
   }
 
   async updateLocalCache(type: SyncEventType, data: Record<string, unknown>): Promise<void> {
-    if (type === 'CheckIn') {
+    if (type === 'MemberUpdate') {
+      const update = data as { memberId: string; status: string; autoRenewEnabled: boolean; cancelledAt?: string }
+      await db.users.where('id').equals(update.memberId).modify({
+        status: update.status,
+        autoRenewEnabled: update.autoRenewEnabled,
+        cancelledAt: update.cancelledAt ?? null,
+        syncStatus: 'synced',
+      })
+    } else if (type === 'CheckIn') {
       const { memberId, lastCheckIn, status } = data as { memberId: string; lastCheckIn: string; status: string }
       await db.users.update(memberId, { lastCheckIn, status })
     } else if (type === 'Sale') {
@@ -135,6 +144,15 @@ export class SyncService {
         isOffline: false,
         retryCount: 0,
       })
+      // Actualizar stock local de cada producto tras confirmación del servidor
+      for (const line of sale.lines) {
+        await db.products
+          .where('id')
+          .equals(line.productId)
+          .modify((product) => {
+            product.stock = Math.max(0, product.stock - line.quantity)
+          })
+      }
     } else if (type === 'HealthUpdate') {
       const m = data as { clientGuid: string; id: number }
       await db.measurements.where('clientGuid').equals(m.clientGuid).modify({
@@ -158,5 +176,24 @@ export class SyncService {
     return db.error_queue.count()
   }
 }
+
+  async retryFromErrorQueue(guid: string): Promise<void> {
+    const item = await db.error_queue.get(guid);
+    if (!item) return;
+    // Mover de error_queue a sync_queue con retryCount reseteado
+    await db.sync_queue.put({
+      guid: item.guid,
+      type: item.type,
+      payload: item.payload,
+      timestamp: Date.now(),
+      isOffline: true,
+      retryCount: 0,
+    });
+    await db.error_queue.delete(guid);
+  }
+
+  async discardFromErrorQueue(guid: string): Promise<void> {
+    await db.error_queue.delete(guid);
+  }
 
 export const syncService = new SyncService()

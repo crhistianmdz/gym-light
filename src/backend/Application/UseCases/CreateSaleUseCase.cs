@@ -53,7 +53,7 @@ public class CreateSaleUseCase
             );
 
             total += line.Subtotal;
-            product.Stock -= line.Quantity;
+            product.AdjustStock(-line.Quantity);
 
             await _productRepository.UpdateAsync(product, ct);
         }

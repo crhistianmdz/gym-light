@@ -13,12 +13,12 @@
 |-----|-------------------------------|---------|----------|-------|----------|-------|
 | 01  | Validación de Acceso Offline  | ✅      | ✅       | ✅    | Completa |       |
 | 02  | Registro de Socio con Foto    | ✅      | ✅       | ✅    | Completa |       |
-| 03  | Venta de Producto             | ✅      | ⚠️       | ✅    | Parcial  | UI parcialmente cubierta. |
-| 04  | Sincronización Automática     | ✅      | ✅       | ⚠️    | Parcial  | Tests incompletos en frontend. |
+| 03  | Venta de Producto             | ✅      | ⚠️       | ✅    | Parcial  | UI parcialmente cubierta (falta ProductRow, QuantityEditor, historial). |
+| 04  | Sincronización Automática     | ✅      | ✅       | ✅    | Completa | Tests completos; fix en MemberUpdate + stock. |
 | 05  | Autenticación y Sesión Offline| ✅      | ✅       | ✅    | Completa |       |
 | 06  | Auditoría de Check-ins        | ✅      | ✅       | ✅    | Completa |       |
-| 07  | Congelamiento de Membresías   | ✅      | ⚠️       | ⚠️    | Parcial  | Falta manejo completo en UI. |
-| 08  | Cancelación con Acceso        | ✅      | ✅       | ⚠️    | Parcial  | Tests incompletos en backend. |
+| 07  | Congelamiento de Membresías   | ✅      | ✅       | ✅    | Completa | Tab integrada en MemberDetail. |
+| 08  | Cancelación con Acceso        | ✅      | ✅       | ✅    | Completa | Tab integrada en MemberDetail. |
 | 09  | Perfil Antropométrico         | ✅      | ✅       | ✅    | Completa |       |
 | 10  | Visualización de Progreso     | ✅      | ✅       | ✅    | Completa |       |
 | 11  | Asignación de Rutinas         | ✅      | ✅       | ✅    | Completa |       |
@@ -28,3 +28,10 @@
 | HU  | Nombre                        | Prioridad PRD |
 |-----|-------------------------------|---------------|
 | 12  | Dashboard de Métricas         | Fase 2        |
+
+## Fixes recientes
+
+- `Sale.cs` — se agregaron `Create(Guid, Guid, DateTime)`, `AddLine()`, `Complete()`, `ToDto()`
+- `syncService.ts` — se agregaron `retryFromErrorQueue()` y `discardFromErrorQueue()`
+- `gymflow.db.ts` — `SyncEventType` ahora incluye `'MemberUpdate'`
+- `SaleRepository.cs` — código unreachable eliminado en `GetByClientGuidAsync`

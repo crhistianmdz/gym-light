@@ -7,7 +7,8 @@ export type SyncEventType =
   | 'Sale'
   | 'SaleCancel'
   | 'HealthUpdate'
-  | 'WorkoutLogCreate';
+  | 'WorkoutLogCreate'
+  | 'MemberUpdate';
 
 export interface LocalMember {
   id: string;

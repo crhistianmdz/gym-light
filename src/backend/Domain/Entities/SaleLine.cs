@@ -17,7 +17,23 @@ public class SaleLine
 
     private SaleLine() { }
 
-    public static SaleLine Create(Guid productId, Product product, int quantity, decimal unitPrice)
+    public static SaleLine Create(Guid productId, string productName, int quantity, decimal unitPrice)
+{
+    if (quantity <= 0)
+        throw new ArgumentException("La cantidad debe ser positiva.", nameof(quantity));
+
+    if (unitPrice <= 0)
+        throw new ArgumentException("El precio unitario debe ser positivo.", nameof(unitPrice));
+
+    return new SaleLine
+    {
+        Id = Guid.NewGuid(),
+        ProductId = productId,
+        Product = null!,
+        Quantity = quantity,
+        UnitPrice = unitPrice
+    };
+}
     {
         if (quantity <= 0)
             throw new ArgumentException("La cantidad debe ser positiva.", nameof(quantity));
