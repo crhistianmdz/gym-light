@@ -10,13 +10,8 @@ const ENDPOINT_MAP: Record<SyncEventType, { url: (payload: Record<string, any>) 
   CheckIn: { url: () => '/api/checkin', method: 'POST' },
   Sale: { url: () => '/api/sales', method: 'POST' },
   SaleCancel: { url: () => '/api/sales', method: 'DELETE' },
-  MemberUpdate: { url: () => '/api/members', method: 'PUT' },
-
-  // New dynamic URL handling for HealthUpdate:
-  HealthUpdate: {
-    url: ({ memberId }: { memberId: string }) => `/api/members/${memberId}/measurements`,
-    method: 'POST',
-  },
+  HealthUpdate: { url: () => '/api/members/measurements', method: 'POST' },
+  WorkoutLogCreate: { url: () => '/api/workout-logs', method: 'POST' },
 }
 
 export class SyncService {
@@ -141,10 +136,16 @@ export class SyncService {
         retryCount: 0,
       })
     } else if (type === 'HealthUpdate') {
-      const m = data as MeasurementDto
+      const m = data as { clientGuid: string; id: number }
       await db.measurements.where('clientGuid').equals(m.clientGuid).modify({
         syncStatus: 'synced',
         id: m.id,
+      })
+    } else if (type === 'WorkoutLogCreate') {
+      const log = data as { clientGuid: string; id: string }
+      await db.workout_logs.where('clientGuid').equals(log.clientGuid).modify({
+        syncStatus: 'synced',
+        id: log.id,
       })
     }
   }

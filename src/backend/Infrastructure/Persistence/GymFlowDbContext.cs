@@ -28,6 +28,55 @@ public class GymFlowDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // --- HU-11: Rutinas Digitales ---
+
+        // WorkoutLog: UNIQUE index en ClientGuid (idempotencia)
+        modelBuilder.Entity<WorkoutLog>()
+            .HasIndex(w => w.ClientGuid)
+            .IsUnique()
+            .HasDatabaseName("IX_WorkoutLogs_ClientGuid");
+
+        // RoutineExercise: CHECK constraint (ejercicio de catálogo O nombre personalizado)
+        modelBuilder.Entity<RoutineExercise>()
+            .ToTable(t => t.HasCheckConstraint(
+                "CK_RoutineExercises_ExerciseOrCustomName",
+                "\"ExerciseCatalogId\" IS NOT NULL OR \"CustomName\" IS NOT NULL"));
+
+        // RoutineAssignment: evitar múltiples cascades desde Member
+        modelBuilder.Entity<RoutineAssignment>()
+            .HasOne(ra => ra.Member)
+            .WithMany()
+            .HasForeignKey(ra => ra.MemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // WorkoutLog: evitar múltiples cascades desde Member
+        modelBuilder.Entity<WorkoutLog>()
+            .HasOne(w => w.Member)
+            .WithMany()
+            .HasForeignKey(w => w.MemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Routine → AppUser (restricción para no cascadear borrando rutinas)
+        modelBuilder.Entity<Routine>()
+            .HasOne(r => r.CreatedBy)
+            .WithMany()
+            .HasForeignKey(r => r.CreatedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // RoutineAssignment → AppUser
+        modelBuilder.Entity<RoutineAssignment>()
+            .HasOne(ra => ra.AssignedBy)
+            .WithMany()
+            .HasForeignKey(ra => ra.AssignedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ExerciseCatalog → AppUser (nullable)
+        modelBuilder.Entity<ExerciseCatalog>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(e => e.CreatedByUserId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
         // ── AppUser ───────────────────────────────────────────────────────────
         modelBuilder.Entity<AppUser>(b =>
         {

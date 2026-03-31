@@ -4,9 +4,7 @@
 **Auth:** JWT en `Authorization: Bearer <token>` (obtenido vía HU-05)  
 **Refresh Token:** HttpOnly Cookie `gymflow_refresh`
 
----
-
-## POST /api/access/checkin
+---\n\n## POST /api/access/checkin\n\n## HU-11 — Rutinas Digitales\n\n### Endpoints\n\n- **`GET /api/exercises`** — Listar catálogo global.\n- **`POST /api/exercises`** — Crear ejercicios (roles `Trainer`, `Admin`, `Owner`).\n- **`GET /api/routines`** — Listar rutinas públicas y del creador autenticado.\n- **`POST /api/routines`** — Crear nueva rutina.\n- **`PUT /api/routines/{id}`** — Actualizar rutina existente.\n- **`GET /api/routines/member/{memberId}`** — Rutinas asignadas a un miembro.\n- **`POST /api/routines/{id}/assign`** — Asignar rutina a un miembro.\n- **`POST /api/workout-logs`** — Registrar sesión de entrenamiento (idempotencia ClientGuid).\n- **`GET /api/workout-logs/member/{memberId}`** — Historial de logs de entrenamiento.
 
 Registra el intento de acceso de un socio. Implementa idempotencia completa vía `ClientGuid`.
 

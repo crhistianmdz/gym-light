@@ -176,9 +176,21 @@ La `sync_queue` procesa eventos de tipo: `CheckIn`, `Sale`, `SaleCancel`, `Membe
     - Sin conversión de unidades en cliente: el valor se grafica as-is con su unidad original en el tooltip.
 
 ### HU-11: Asignación de Rutinas Digitales
-**Como** Entrenador, **quiero** armar rutinas para mis socios, **para** guiar su entrenamiento.
-* **Criterios de Aceptación:**
-    1. El socio debe poder marcar cada ejercicio como "completado" desde la PWA.
+**Como** Entrenador, **quiero** armar rutinas para mis socios y asignarlas, **para** guiar su entrenamiento de forma estructurada.
+
+**Criterios de Aceptación:**
+1. El Trainer (y Admin/Owner) puede crear una rutina con nombre, descripción y lista de ejercicios (orden, sets, reps, notas).
+2. Los ejercicios pueden seleccionarse del catálogo global (`ExerciseCatalog`) o escribirse con nombre libre (ejercicio personalizado).
+3. Una rutina puede marcarse como pública (`IsPublic = true`) para que cualquier Trainer del gimnasio pueda asignarla.
+4. El Trainer (y Admin/Owner) puede asignar una rutina a cualquier socio.
+5. El socio puede ver sus rutinas asignadas desde la PWA.
+6. El socio puede marcar cada ejercicio como "completado" (checkbox) desde la PWA — genera un `WorkoutLog` con un `ClientGuid`.
+7. El marcado de ejercicios funciona **offline**: se encola en `sync_queue` y se sincroniza al recuperar conexión.
+8. El backend es idempotente: si el `ClientGuid` del `WorkoutLog` ya existe, responde `200 OK` sin reprocesar.
+9. **RBAC**:
+   - `Member`: solo puede ver y completar sus propias rutinas asignadas.
+   - `Trainer`, `Admin`, `Owner`: pueden crear, editar y asignar rutinas a cualquier socio.
+10. Sin límite de historial de WorkoutLogs en esta versión.
 
 ### HU-12: Dashboard de Métricas (Dueño)
 **Como** Dueño, **quiero** ver el flujo de caja y la tasa de deserción (Churn Rate), **para** tomar decisiones estratégicas.

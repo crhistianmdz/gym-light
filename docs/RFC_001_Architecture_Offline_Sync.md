@@ -142,3 +142,58 @@ type MeasurementKey = 'weightKg' | 'bodyFatPct' | 'chestCm' | 'waistCm' | 'hipCm
 
 **Offline:**
 - Fuente de datos: `measurementService.getByMember(memberId)` — resuelve desde IndexedDB si sin conexión (misma lógica de HU-09).
+
+## 7. Rutinas Digitales (HU-11)
+
+### 7.1. Modelo de Dominio
+
+| Entidad | Propósito |
+|---|---|
+| `ExerciseCatalog` | Biblioteca global de ejercicios (nombre, descripción, mediaUrl opcional) |
+| `Routine` | Plantilla de rutina creada por Trainer/Admin/Owner |
+| `RoutineExercise` | Ejercicio dentro de una Routine (orden, sets, reps, notes, ExerciseCatalogId nullable) |
+| `RoutineAssignment` | Asignación de una Routine a un Member por un Trainer/Admin/Owner |
+| `WorkoutLog` | Registro de sesión de entrenamiento del Member |
+| `WorkoutExerciseEntry` | Estado de cada ejercicio en el WorkoutLog (Completed boolean) |
+
+### 7.2. Esquema Dexie.js (versión 5)
+
+```typescript
+db.version(5).stores({
+  // stores anteriores sin cambios...
+  exercise_catalog: 'id, name, isCustom',
+  routines:         'id, createdByUserId, isPublic, updatedAt',
+  routine_assignments: 'id, routineId, memberId, assignedAt',
+  workout_logs:     'id, assignmentId, memberId, clientGuid, syncStatus',
+})
+```
+
+### 7.3. Eventos de Sincronización (sync_queue)
+
+Nuevos tipos de evento:
+- `WorkoutLogCreate`: payload `{ assignmentId, memberId, entries: [{routineExerciseId, completed, completedAt}], clientGuid }`
+- `ExerciseComplete`: payload `{ workoutLogId, routineExerciseId, completed, clientGuid }`
+
+### 7.4. RBAC por endpoint
+
+| Endpoint | Roles permitidos |
+|---|---|
+| `POST /api/routines` | Trainer, Admin, Owner |
+| `PUT /api/routines/{id}` | Trainer (propias), Admin, Owner |
+| `GET /api/routines` | Trainer, Admin, Owner |
+| `POST /api/routine-assignments` | Trainer, Admin, Owner |
+| `GET /api/members/{id}/routines` | Member (solo propio), Trainer, Admin, Owner |
+| `POST /api/workout-logs` | Member (solo propio), Trainer, Admin, Owner |
+
+### 7.5. Offline Strategy
+
+- Estrategia idéntica a HU-09: Network-First con fallback a IndexedDB.
+- El Member puede marcar ejercicios offline → encola `WorkoutLogCreate` en `sync_queue` con `clientGuid`.
+- Al reconectar, `syncService` procesa la cola; el backend responde `200 OK` si `clientGuid` ya existe (idempotencia).
+- Conflict resolution: server wins (consistente con RFC sección 4).
+
+### 7.6. Granularidad de tracking
+
+- Nivel: **por ejercicio** — boolean `Completed` + `CompletedAt` (timestamp).
+- Sin tracking de sets/reps/peso en esta versión.
+- `WorkoutLog` registra la sesión completa (array de entries).

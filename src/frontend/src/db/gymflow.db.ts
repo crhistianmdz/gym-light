@@ -1,8 +1,21 @@
 import Dexie, { type EntityTable } from 'dexie';
 
-// —— Preserved existing types from the file ——
+// —— Core types ——
 export type MemberStatus = 'Active' | 'Frozen' | 'Expired';
-export type SyncEventType = 'CheckIn' | 'Sale' | 'HealthUpdate' | 'SaleCancel';
+export type SyncEventType =
+  | 'CheckIn'
+  | 'Sale'
+  | 'SaleCancel'
+  | 'HealthUpdate'
+  | 'WorkoutLogCreate';
+
+export interface LocalMember {
+  id: string;
+  fullName: string;
+  photoWebP?: string;
+  status: MemberStatus;
+  membershipEndDate: string;
+}
 
 export interface SyncQueueItem {
   guid: string;
@@ -13,7 +26,7 @@ export interface SyncQueueItem {
   retryCount: number;
 }
 
-// —— New types for HU-03 ——
+// —— HU-03: POS ——
 export interface ProductLocal {
   id: string;
   sku?: string;
@@ -59,12 +72,12 @@ export interface ErrorQueueItem {
   failedAt: number;
 }
 
-// Added for HU-09 Anthropometric
+// —— HU-09: Medidas antropométricas ——
 export interface MeasurementLocal {
   id?: number;
   memberId: string;
   recordedById: string;
-  recordedAt: string; // ISO string
+  recordedAt: string;
   weightKg: number;
   bodyFatPct: number;
   chestCm: number;
@@ -78,6 +91,69 @@ export interface MeasurementLocal {
   syncStatus: 'pending' | 'synced' | 'error';
 }
 
+// —— HU-11: Rutinas Digitales ——
+export interface ExerciseCatalogLocal {
+  id: string;
+  name: string;
+  description?: string;
+  mediaUrl?: string;
+  isCustom: boolean;
+}
+
+export interface RoutineExerciseLocal {
+  id: string;
+  exerciseCatalogId?: string;
+  catalogExerciseName?: string;
+  customName?: string;
+  order: number;
+  sets: number;
+  reps: number;
+  notes?: string;
+}
+
+export interface RoutineLocal {
+  id: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  createdByUserId: string;
+  updatedAt: string;
+  exercises: RoutineExerciseLocal[];
+}
+
+export interface RoutineAssignmentLocal {
+  id: string;
+  routineId: string;
+  routineName: string;
+  memberId: string;
+  assignedByUserId: string;
+  assignedAt: string;
+  isActive: boolean;
+  routine?: RoutineLocal;
+}
+
+export interface WorkoutEntryLocal {
+  routineExerciseId: string;
+  exerciseName: string;
+  sets: number;
+  reps: number;
+  completed: boolean;
+  completedAt?: string;
+  notes?: string;
+}
+
+export interface WorkoutLogLocal {
+  id: string;
+  assignmentId: string;
+  memberId: string;
+  sessionDate: string;
+  clientGuid: string;
+  createdAt: string;
+  syncStatus: 'synced' | 'pending' | 'error';
+  entries: WorkoutEntryLocal[];
+}
+
+// —— Database class ——
 class GymFlowDatabase extends Dexie {
   users!: EntityTable<LocalMember, 'id'>;
   sync_queue!: EntityTable<SyncQueueItem, 'guid'>;
@@ -85,23 +161,61 @@ class GymFlowDatabase extends Dexie {
   products!: EntityTable<ProductLocal, 'id'>;
   sales!: EntityTable<SaleLocal, 'id'>;
   error_queue!: EntityTable<ErrorQueueItem, 'guid'>;
-
-  // Added anthropometry
   measurements!: EntityTable<MeasurementLocal, 'id'>;
+  exercise_catalog!: EntityTable<ExerciseCatalogLocal, 'id'>;
+  routines!: EntityTable<RoutineLocal, 'id'>;
+  routine_assignments!: EntityTable<RoutineAssignmentLocal, 'id'>;
+  workout_logs!: EntityTable<WorkoutLogLocal, 'id'>;
 
   constructor() {
     super('gymflow');
 
-    this.version(4).stores({
+    this.version(1).stores({
       users: 'id, status, membershipEndDate',
-      sync_queue: 'guid, type, timestamp, retryCount',
+      sync_queue: 'guid, type, timestamp',
+      metadata: 'key',
+    });
+
+    this.version(2).stores({
+      users: 'id, status, membershipEndDate',
+      sync_queue: 'guid, type, timestamp',
+      metadata: 'key',
+      products: 'id, name, sku, stock',
+      sales: 'id, clientGuid, status, timestamp',
+    });
+
+    this.version(3).stores({
+      users: 'id, status, membershipEndDate',
+      sync_queue: 'guid, type, timestamp',
       metadata: 'key',
       products: 'id, name, sku, stock',
       sales: 'id, clientGuid, status, timestamp',
       error_queue: 'guid, type, timestamp, retryCount',
+    });
 
-      // New measurements schema
-      measurements: '++id, memberId, clientGuid, recordedAt, syncStatus'
+    this.version(4).stores({
+      users: 'id, status, membershipEndDate',
+      sync_queue: 'guid, type, timestamp',
+      metadata: 'key',
+      products: 'id, name, sku, stock',
+      sales: 'id, clientGuid, status, timestamp',
+      error_queue: 'guid, type, timestamp, retryCount',
+      measurements: '++id, memberId, clientGuid, syncStatus',
+    });
+
+    // HU-11: Rutinas Digitales
+    this.version(5).stores({
+      users: 'id, status, membershipEndDate',
+      sync_queue: 'guid, type, timestamp',
+      metadata: 'key',
+      products: 'id, name, sku, stock',
+      sales: 'id, clientGuid, status, timestamp',
+      error_queue: 'guid, type, timestamp, retryCount',
+      measurements: '++id, memberId, clientGuid, syncStatus',
+      exercise_catalog: 'id, name, isCustom',
+      routines: 'id, createdByUserId, isPublic, updatedAt',
+      routine_assignments: 'id, routineId, memberId, assignedAt',
+      workout_logs: 'id, assignmentId, memberId, clientGuid, syncStatus',
     });
   }
 }
