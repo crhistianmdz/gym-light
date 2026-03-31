@@ -234,3 +234,5 @@ Referencias rápidas para orientarse en el codebase:
 - [Estructura de carpetas](docs/technical/folder-structure.md)
 - [Modelos de dominio](docs/technical/domain-models.md)
 - [Schema de base de datos](docs/technical/database-schema.md)
+- [Estado de implementación por HU](docs/technical/implementation-status.md)
+- [Patrones de implementación](docs/technical/patterns.md)
