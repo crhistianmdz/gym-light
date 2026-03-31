@@ -161,9 +161,19 @@ La `sync_queue` procesa eventos de tipo: `CheckIn`, `Sale`, `SaleCancel`, `Membe
     - Unidades: métrico (`kg`/`cm`) e imperial (`lbs`/`inches`) — campo `unitSystem` en entidad
 
 ### HU-10: Visualización de Evolución (Gráficas)
-**Como** Socio, **quiero** ver gráficas de mi progreso físico, **para** mantenerme motivado.
+**Como** Socio (y roles autorizados), **quiero** ver gráficas de mi progreso físico, **para** mantenerme motivado y hacer seguimiento de mi evolución.
 * **Criterios de Aceptación:**
-    1. Generar gráfica de líneas comparativa entre las distintas tomas de medidas.
+    1. Generar gráfica de líneas comparativa entre las distintas tomas de medidas (datos de HU-09).
+    2. El usuario puede seleccionar cuál de las 7 medidas desea graficar mediante un selector (WeightKg, BodyFatPct, ChestCm, WaistCm, HipCm, ArmCm, ThighCm). Variable por defecto: Peso.
+    3. Los valores se muestran tal como fueron registrados, respetando el `UnitSystem` de cada toma (sin conversión). El tooltip indica la unidad individual de cada punto.
+    4. Si hay 0 tomas: mostrar mensaje "Aún no hay medidas registradas." Si hay 1 toma: mostrar el punto en la gráfica (sin línea). Si hay 2+: gráfica de líneas completa.
+    5. RBAC: el Socio solo puede ver sus propias gráficas. Trainer, Admin y Owner pueden ver las gráficas de cualquier socio.
+    6. La gráfica se visualiza desde el tab "Progreso" dentro de la pantalla de detalle del socio (`MemberDetail`).
+    7. Soporte offline-first: si no hay conexión, se usan los datos del store `measurements` de IndexedDB (Dexie.js).
+* **Decisiones Técnicas (PO aprobadas 2026-03-31):**
+    - Librería de gráficas: `recharts` (React-first, bundle ~150kb, mantenimiento activo).
+    - UI Kit: Material Design (MUI) — Card para contenedor, Select para selector de variable, CircularProgress para loading.
+    - Sin conversión de unidades en cliente: el valor se grafica as-is con su unidad original en el tooltip.
 
 ### HU-11: Asignación de Rutinas Digitales
 **Como** Entrenador, **quiero** armar rutinas para mis socios, **para** guiar su entrenamiento.

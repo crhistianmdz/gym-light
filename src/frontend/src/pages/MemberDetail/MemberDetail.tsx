@@ -3,9 +3,11 @@ import { Tabs, Tab, Box } from '@mui/material';
 import { useParams, Link, Route, Routes, useNavigate } from 'react-router-dom';
 import { AnthropometryForm } from '@/components/AnthropometryForm/AnthropometryForm';
 import { AnthropometryHistory } from '@/components/AnthropometryHistory/AnthropometryHistory';
+import { MemberProgress } from '@/pages/MemberProgress/MemberProgress';
 
 const tabs = [
   { label: 'Antropometría', value: 'anthropometry', path: 'anthropometry' },
+  { label: 'Progreso',      value: 'progress',      path: 'progress'      },
 ];
 
 export const MemberDetail: React.FC = () => {
@@ -33,6 +35,7 @@ export const MemberDetail: React.FC = () => {
             <AnthropometryHistory memberId={id!} />
           </Box>
         } />
+        <Route path="progress" element={<MemberProgress />} />
       </Routes>
     </Box>
   );

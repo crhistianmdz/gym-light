@@ -1,8 +1,8 @@
 # RFC 001: Arquitectura de Sincronización, Idempotencia y Resiliencia
 
 **Estado:** Aprobado para Implementación  
-**Versión:** 1.2  
-**Tecnologías:** .NET 8, React, Dexie.js (IndexedDB), Service Workers, material design.
+**Versión:** 1.3  
+**Tecnologías:** .NET 8, React, Dexie.js (IndexedDB), Service Workers, Material Design (MUI), recharts.
 
 ## 1. Introducción
 Este documento define la estrategia técnica para garantizar que GymFlow Lite opere con un modelo "Offline-First". El sistema prioriza la **Disponibilidad** sobre la **Consistencia Fuerte** inmediata, utilizando sincronización asíncrona e idempotente.
@@ -87,3 +87,58 @@ Para asegurar la integridad entre el cliente y el servidor:
     *   Bloqueo de venta si el stock local es `0`.  
     *   Notificación de stock crítico al llegar al `20%`.
     *   Confirmación con autoridad del servidor para ajustes de stock.
+
+## 6. Visualización de Datos (Frontend)
+
+### 6.1. Librería de Gráficas
+Se utiliza **`recharts`** para todas las visualizaciones del frontend:
+- Criterios de selección: React-first (API JSX declarativa), bundle ~150kb gzipped, mantenimiento activo, sin dependencias de Canvas/SVG externo.
+- Alternativas descartadas: `chart.js` (más pesada, API imperativa), `victory` (menor adopción).
+
+### 6.2. Gráfica de Evolución Física (HU-10)
+Componente `ProgressChart` — `LineChart` de recharts montado dentro de una `MUI Card`.
+
+**Contrato de datos:**
+```typescript
+// Entrada: array de mediciones de HU-09
+interface MeasurementLocal {
+  id: string
+  memberId: string
+  recordedAt: string       // ISO 8601
+  unitSystem: 0 | 1        // 0=Metric, 1=Imperial
+  weightKg: number
+  bodyFatPct: number
+  chestCm: number
+  waistCm: number
+  hipCm: number
+  armCm: number
+  thighCm: number
+}
+
+// Variable seleccionable
+type MeasurementKey = 'weightKg' | 'bodyFatPct' | 'chestCm' | 'waistCm' | 'hipCm' | 'armCm' | 'thighCm'
+```
+
+**Reglas de visualización:**
+- Eje X: `RecordedAt` formateado como `DD/MM/YYYY`.
+- Eje Y: valor numérico del campo seleccionado, sin conversión.
+- Tooltip: fecha + valor + unidad derivada del `UnitSystem` de esa toma específica.
+- 0 tomas → mensaje vacío (sin gráfica). 1 toma → punto solo (`dot`, sin `line`). 2+ tomas → `LineChart` completa.
+
+**Unidades por campo y sistema:**
+| Campo        | Metric | Imperial |
+|--------------|--------|----------|
+| weightKg     | kg     | lbs      |
+| bodyFatPct   | %      | %        |
+| chestCm      | cm     | in       |
+| waistCm      | cm     | in       |
+| hipCm        | cm     | in       |
+| armCm        | cm     | in       |
+| thighCm      | cm     | in       |
+
+**RBAC:**
+- `Member`: solo puede ver su propio `memberId` (guard en componente y en hook).
+- `Trainer`, `Admin`, `Owner`: acceso a cualquier `memberId`.
+
+**Offline:**
+- Fuente de datos: `measurementService.getByMember(memberId)` — resuelve desde IndexedDB si sin conexión (misma lógica de HU-09).

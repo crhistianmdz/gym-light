@@ -498,3 +498,7 @@ Obtiene el historial completo de medidas del socio, ordenado por fecha descenden
 | `200 OK` | Lista de `BodyMeasurementDto[]` (puede ser `[]`) |
 | `403 Forbidden` | Sin permisos |
 | `404 Not Found` | Socio no encontrado |
+
+> **Consumidor HU-10:** Este endpoint es la fuente de datos para el componente `ProgressChart`.
+> El frontend ordena los resultados en forma **ascendente** por `recordedAt` antes de renderizar
+> la gráfica (el backend devuelve descendente). Ver `useMemberProgress.ts`.
