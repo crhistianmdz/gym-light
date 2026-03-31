@@ -7,7 +7,7 @@ La fuente de verdad del producto es `/docs`. **No escribas código que contradig
 
 ## 1. Estado del Proyecto
 
-Este repositorio está en **Día Cero** — solo existen documentos de diseño, sin código fuente.
+El proyecto tiene código fuente activo. Las HU 01–11 están implementadas (backend + frontend).
 Toda implementación debe seguir el pipeline SSD definido en `.agents/AGENT.MD`.
 
 ```
@@ -224,3 +224,13 @@ Request API
 4. Implementar en orden: Batch A (Dominio + DB) → Batch B (Lógica + API) → Batch C (UI + Offline)
 5. Verificar que no se rompió ninguna regla de negocio de la sección 6
 ```
+
+---
+
+## 13. Mapa del Proyecto
+
+Referencias rápidas para orientarse en el codebase:
+
+- [Estructura de carpetas](docs/technical/folder-structure.md)
+- [Modelos de dominio](docs/technical/domain-models.md)
+- [Schema de base de datos](docs/technical/database-schema.md)
