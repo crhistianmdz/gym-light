@@ -11,6 +11,7 @@ public class SalesController : ControllerBase
 {
     private readonly CreateSaleUseCase _createSaleUseCase;
     private readonly CancelSaleUseCase _cancelSaleUseCase;
+    private readonly GetSalesUseCase _getSalesUseCase;
 
     public SalesController(
 CreateSaleUseCase createSaleUseCase,
@@ -45,8 +46,10 @@ CreateSaleUseCase createSaleUseCase,
         CancellationToken ct = default)
     {
         var result = await _getSalesUseCase.ExecuteAsync(page, pageSize, ct);
-        return result.IsSuccess ? Ok (Result!)!!...
-/// ful-code.
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(new { error = result.Error });
+    }
+
+    [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,Owner")]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
     {

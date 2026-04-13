@@ -6,8 +6,11 @@ WORKDIR /app
 COPY docker/backend/GymFlow.WebAPI.csproj ./GymFlow.WebAPI.csproj
 RUN dotnet restore GymFlow.WebAPI.csproj
 
-# Copy the rest of the source code
-COPY src/backend/ ./
+# Copy only the source layers needed for the API — excluye Tests/
+COPY src/backend/Domain/       ./Domain/
+COPY src/backend/Application/  ./Application/
+COPY src/backend/Infrastructure/ ./Infrastructure/
+COPY src/backend/WebAPI/       ./WebAPI/
 
 # Publish
 RUN dotnet publish GymFlow.WebAPI.csproj -c Release --no-restore -o /out

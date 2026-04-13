@@ -1,6 +1,8 @@
 using GymFlow.Application.DTOs.Metrics;
 using GymFlow.Domain.Interfaces;
 
+using GymFlow.Application.Common;
+
 namespace GymFlow.Application.UseCases.Admin;
 
 public class GetChurnReportUseCase

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GymFlow.Domain.Enums;
+using GymFlow.Application.DTOs;
+
 namespace GymFlow.Domain.Entities;
 
 /// <summary>
@@ -46,7 +49,7 @@ public class Sale
             PerformedByUserId = performedByUserId,
             ClientGuid = clientGuid,
             Timestamp = timestamp,
-            Status = SaleStatus.Pending,
+            Status = SaleStatus.Active,
             Total = 0,
             Lines = new List<SaleLine>()
         };
@@ -62,7 +65,7 @@ public class Sale
     public void Complete(decimal total)
     {
         Total = total;
-        Status = SaleStatus.Completed;
+        Status = SaleStatus.Active;
     }
 
     public SaleDto ToDto()

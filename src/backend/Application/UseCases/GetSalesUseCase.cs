@@ -2,6 +2,8 @@ using GymFlow.Application.DTOs;
 using GymFlow.Domain.Entities;
 using GymFlow.Domain.Interfaces;
 
+using GymFlow.Application.Common;
+
 namespace GymFlow.Application.UseCases;
 
 public class GetSalesUseCase

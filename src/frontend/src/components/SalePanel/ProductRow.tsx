@@ -1,10 +1,11 @@
 import React from 'react';
 import { Box, Typography, Chip, Button } from '@mui/material';
 import { QuantityEditor } from './QuantityEditor';
+import type { ProductResponse } from '@/services/saleService';
 
 export interface ProductRowProps {
-  product: ProductLocal;
-  onAddLine: (product: ProductLocal, quantity: number) => void;
+  product: ProductResponse;
+  onAddLine: (product: ProductResponse, quantity: number) => void;
 }
 
 export const ProductRow: React.FC<ProductRowProps> = ({ product, onAddLine }) => {

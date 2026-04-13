@@ -19,12 +19,7 @@ public class UpdateProductUseCase
         if (product is null)
             return Result<ProductDto>.NotFound("Producto no encontrado.");
 
-        product.UpdateDetails(
-            request.Sku,
-            request.Name,
-            request.Description,
-            request.Price
-        );
+        product.Update(request.Sku, request.Name, request.Description, request.Price);
 
         await _productRepository.UpdateAsync(product, ct);
         

@@ -24,6 +24,12 @@ public class GymFlowDbContext : DbContext
     // HU-07 — Congelamiento de membresías
     public DbSet<MembershipFreeze> MembershipFreezes { get; set; }
 
+    public DbSet<WorkoutLog> WorkoutLogs { get; set; }
+    public DbSet<Routine> Routines { get; set; }
+public DbSet<RoutineExercise> RoutineExercises { get; set; }
+    public DbSet<RoutineAssignment> RoutineAssignments { get; set; }
+    public DbSet<ExerciseCatalog> ExerciseCatalogs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -162,7 +168,7 @@ public class GymFlowDbContext : DbContext
         {
             entity.HasKey(l => l.Id);
             entity.Property(l => l.UnitPrice).HasColumnType("decimal(18,2)");
-            entity.Property(l => l.Subtotal).HasColumnType("decimal(18,2)");
+            entity.Ignore(l => l.Subtotal);
             entity.HasOne(l => l.Product)
                   .WithMany()
                   .HasForeignKey(l => l.ProductId)
@@ -206,7 +212,7 @@ public class GymFlowDbContext : DbContext
             e.Property(b => b.ClientGuid).IsRequired().HasMaxLength(36);
             e.HasIndex(b => b.ClientGuid).IsUnique().HasDatabaseName("IX_BodyMeasurements_ClientGuid");
             e.HasIndex(b => new { b.MemberId, b.RecordedAt }).HasDatabaseName("IX_BodyMeasurements_MemberId_RecordedAt");
-            e.HasOne(b => b.Member).WithMany().HasForeignKey(b => b.MemberId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Member>().WithMany().HasForeignKey(b => b.MemberId).OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<Payment>(e =>
         {
@@ -221,4 +227,6 @@ public class GymFlowDbContext : DbContext
             e.HasOne<AppUser>().WithMany().HasForeignKey(p => p.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
         });
     }
+
     public DbSet<Payment> Payments { get; set; }
+}

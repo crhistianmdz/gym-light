@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
-  Alert, Box, Button, Chip, CircularProgress, Modal, Stack, Typography,
+  Alert, Box, Button, CircularProgress, Modal, Typography,
 } from '@mui/material'
 import CancelIcon from '@mui/icons-material/CancelOutlined'
 import { cancelMembership } from '@/services/cancelService'
@@ -25,11 +25,12 @@ export function CancelMembershipPanel({ memberId, memberStatus, membershipEndDat
       setState('success')
       onSuccess()
     } catch (err) {
-      if (err.message === 'OFFLINE_QUEUED') {
-        setState('offline')
+      const error = err instanceof Error ? err : new Error(String(err));
+      if (error.message === 'OFFLINE_QUEUED') {
+        setState('offline');
       } else {
-        setError(err.message ?? 'Unexpected error occurred')
-        setState('error')
+        setError(error.message ?? 'Unexpected error occurred');
+        setState('error');
       }
     }
   }

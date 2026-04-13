@@ -1,5 +1,16 @@
 import { fetchWithAuth } from '@/services/httpClient';
 
+export interface ProductResponse {
+  id: string;
+  sku?: string;
+  name: string;
+  description?: string;
+  price: number;
+  stock: number;
+  initialStock: number;
+  isLowStock: boolean;
+}
+
 export interface CreateProductRequest {
   name: string;
   sku?: string;
@@ -16,6 +27,14 @@ export interface UpdateProductRequest {
 }
 
 export const productService = {
+  async getProducts(): Promise<ProductResponse[]> {
+    const response = await fetchWithAuth('/api/products');
+    if (!response.ok) {
+      throw new Error('Error al obtener productos.');
+    }
+    return response.json();
+  },
+
   async createProduct(data: CreateProductRequest): Promise<void> {
     const response = await fetchWithAuth('/api/products', {
       method: 'POST',

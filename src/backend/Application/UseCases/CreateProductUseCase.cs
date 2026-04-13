@@ -24,11 +24,11 @@ public class CreateProductUseCase
         }
 
         var product = Product.Create(
-            request.Sku,
             request.Name,
-            request.Description,
             request.Price,
-            initialStock: request.InitialStock
+            request.InitialStock,
+            request.Sku,
+            request.Description
         );
 
         await _productRepository.AddAsync(product, ct);

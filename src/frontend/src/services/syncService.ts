@@ -40,11 +40,11 @@ export class SyncService {
     await db.metadata.put({ key: SYNC_LOCK_KEY, value: 'true' })
 
     try {
-      const queueItems = await db.sync_queue.orderBy('timestamp').toArray()
+      const queueItems = await db.sync_queue.orderBy('timestamp').toArray() as SyncQueueItem[];
 
       for (const item of queueItems) {
         try {
-          const endpoint = ENDPOINT_MAP[item.type]
+          const endpoint = ENDPOINT_MAP[item.type as SyncEventType]
           const options: RequestInit = {
             method: endpoint.method,
             headers: { 'X-Client-Guid': item.guid },
@@ -65,7 +65,7 @@ export class SyncService {
             await this.handleFailure(item, response.status)
           }
         } catch (error) {
-          await this.handleFailure(item, error.message)
+          await this.handleFailure(item, error instanceof Error ? error.message : String(error))
         }
       }
     } finally {
@@ -149,7 +149,7 @@ export class SyncService {
         await db.products
           .where('id')
           .equals(line.productId)
-          .modify((product) => {
+          .modify((product: any) => {
             product.stock = Math.max(0, product.stock - line.quantity)
           })
       }
@@ -175,12 +175,10 @@ export class SyncService {
   async getErrorCount(): Promise<number> {
     return db.error_queue.count()
   }
-}
 
   async retryFromErrorQueue(guid: string): Promise<void> {
     const item = await db.error_queue.get(guid);
     if (!item) return;
-    // Mover de error_queue a sync_queue con retryCount reseteado
     await db.sync_queue.put({
       guid: item.guid,
       type: item.type,
@@ -195,5 +193,6 @@ export class SyncService {
   async discardFromErrorQueue(guid: string): Promise<void> {
     await db.error_queue.delete(guid);
   }
+}
 
 export const syncService = new SyncService()

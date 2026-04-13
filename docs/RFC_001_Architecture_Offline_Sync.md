@@ -15,13 +15,13 @@ Se utilizará **IndexedDB** a través de la librería `Dexie.js` para gestionar 
     *   `id`, `fullName`, `photoWebP`, `status` (Active, Frozen, Expired), `membershipEndDate`.
 *   **Store `sync_queue`:** Cola de eventos pendientes por procesar en el servidor.
     *   `guid` (UUID v4 generado en el cliente).
-    *   `type` (CheckIn, Sale, SaleCancel, HealthUpdate).
+     *   `type` (CheckIn, Sale, SaleCancel, HealthUpdate, WorkoutLogCreate, MemberUpdate).
     *   `payload` (JSON con datos de la transacción).
     *   `timestamp`.
 *   **Store `error_queue`:**
     Necesaria para almacenar eventos que fallaron 3 veces durante la sincronización.
     ```typescript
-    db.version(3).stores({
+    db.version(6).stores({
       // stores anteriores sin cambios...
       error_queue: 'guid, type, timestamp, retryCount'
     })
@@ -32,8 +32,8 @@ Se utilizará **IndexedDB** a través de la librería `Dexie.js` para gestionar 
       payload: string
       timestamp: number
       retryCount: number
-      lastError: string
-      failedAt: number
+lastError?: string
+failedAt?: number
     }
     ```
 *   **Store `metadata`:** 

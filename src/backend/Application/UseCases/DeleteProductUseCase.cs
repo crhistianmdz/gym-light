@@ -18,7 +18,7 @@ public class DeleteProductUseCase
         if (product is null)
             return Result<bool>.NotFound("Producto no encontrado.");
 
-        await _productRepository.DeleteAsync(product, ct);
+        await _productRepository.DeleteAsync(product.Id, ct);
         return Result<bool>.Success(true);
     }
 }

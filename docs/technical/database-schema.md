@@ -3,118 +3,140 @@
 ## PostgreSQL — Tablas
 
 ### Members
-| Columna       | Tipo         | Constraints                      |
-|---------------|--------------|----------------------------------|
-| Id            | UUID         | PK                               |
-| FullName      | VARCHAR(200) | NOT NULL                         |
-| PhotoWebPUrl  | VARCHAR(500) | NOT NULL                         |
-| Status        | VARCHAR(20)  | NOT NULL, CHECK (Active/Frozen/Expired) |
-| MembershipEndDate | TIMESTAMPTZ | NOT NULL                        |
-| CreatedAt     | TIMESTAMPTZ  | NOT NULL                         |
-| UpdatedAt     | TIMESTAMPTZ  | NOT NULL                         |
+| Columna              | Tipo         | Constraints                      |
+|----------------------|--------------|----------------------------------|
+| Id                  | UUID         | PK                               |
+| FullName            | VARCHAR(200) | NOT NULL                         |
+| PhotoWebPUrl        | VARCHAR(500) | NOT NULL                         |
+| Status              | VARCHAR(20)  | NOT NULL, CHECK (Active/Frozen/Expired) |
+| MembershipEndDate   | TIMESTAMPTZ  | NOT NULL                         |
+| CreatedAt           | TIMESTAMPTZ  | NOT NULL                         |
+| UpdatedAt           | TIMESTAMPTZ  | NOT NULL                         |
 
 Índices:
 - PRIMARY KEY (Id)
 
-### AccessLogs
-| Columna         | Tipo        | Constraints              |
-|-----------------|-------------|--------------------------|
-| Id              | UUID        | PK                       |
-| ClientGuid      | UUID        | UNIQUE NOT NULL          |
-| Timestamp       | TIMESTAMPTZ | NOT NULL                 |
-| PerformedByUserId | UUID      | NOT NULL                 |
-| WasAllowed      | BOOLEAN     | NOT NULL                 |
-| IsOffline       | BOOLEAN     | NOT NULL                 |
-| DenialReason    | VARCHAR(300)| NULLABLE                 |
+### Products
+| Columna   | Tipo          | Constraints                                  |
+|-----------|---------------|----------------------------------------------|
+| Id        | UUID          | PK                                           |
+| Sku       | VARCHAR(100)  | UNIQUE, NOT NULL                             |
+| Name      | VARCHAR(200)  | NOT NULL                                     |
+| Stock     | INTEGER       | NOT NULL, CHECK (>= 0)                       |
+| Price     | DECIMAL(18,2) | NOT NULL                                     |
+| CreatedAt | TIMESTAMPTZ   | NOT NULL                                     |
 
 Índices:
-- UNIQUE idx_accesslogs_client_guid (ClientGuid)
+- UNIQUE idx_products_sku (Sku)
 
-### MembershipFreezes
-| Columna       | Tipo         | Constraints                      |
-|---------------|--------------|----------------------------------|
-| Id            | UUID         | PK                               |
-| MemberId      | UUID         | FK                              |
-| StartDate     | TIMESTAMPTZ  | NOT NULL                         |
-| EndDate       | TIMESTAMPTZ  | NOT NULL                         |
-| DurationDays  | INTEGER      | NOT NULL                         |
-| CreatedByUserId | UUID       | NOT NULL                         |
-| CreatedAt     | TIMESTAMPTZ  | NOT NULL                         |
+### Sales
+| Columna      | Tipo         | Constraints                      |
+|--------------|--------------|----------------------------------|
+| Id           | UUID         | PK                               |
+| ClientGuid   | UUID         | UNIQUE, NOT NULL                 |
+| MemberId     | UUID         | FK → Members(Id)                 |
+| Total        | DECIMAL(18,2)| NOT NULL                         |
+| CreatedAt    | TIMESTAMPTZ  | NOT NULL                         |
 
 Índices:
-- PRIMARY KEY (Id)
-- INDEX IX_MembershipFreezes_MemberId_StartDate (MemberId, StartDate)
+- UNIQUE idx_sales_client_guid (ClientGuid)
+
+### SaleLines
+| Columna    | Tipo         | Constraints                      |
+|------------|--------------|----------------------------------|
+| Id         | UUID         | PK                               |
+| SaleId     | UUID         | FK → Sales(Id)                   |
+| ProductId  | UUID         | FK → Products(Id)                |
+| Quantity   | INTEGER      | NOT NULL                         |
+| UnitPrice  | DECIMAL(18,2)| NOT NULL                         |
+
+Relaciones:
+- SaleLines.SaleId → Sales.Id (ON DELETE CASCADE)
+- SaleLines.ProductId → Products.Id (ON DELETE RESTRICT)
 
 ### Payments
-| Columna | Tipo | Constraints |
-|---------|------|-------------|
-| Id | UUID | PK |
-| GymId | UUID | NOT NULL, FK → Gyms(Id) |
-| MemberId | UUID | NULL, FK → Members(Id) |
-| ClientGuid | UUID | NOT NULL, UNIQUE |
-| Amount | DECIMAL(18,2) | NOT NULL, CHECK > 0 |
-| Category | SMALLINT | NOT NULL (0=Membership, 1=POS) |
-| Date | TIMESTAMP | NOT NULL |
-| Description | VARCHAR(500) | NULL |
-| CreatedAt | TIMESTAMP | NOT NULL, DEFAULT NOW() |
+| Columna      | Tipo         | Constraints                      |
+|--------------|--------------|----------------------------------|
+| Id           | UUID         | PK                               |
+| MemberId     | UUID         | FK → Members(Id)                 |
+| ClientGuid   | UUID         | UNIQUE, NOT NULL                 |
+| Amount       | DECIMAL(18,2)| NOT NULL, CHECK > 0              |
+| Category     | SMALLINT     | NOT NULL (0=Membership, 1=POS)   |
+| CreatedAt    | TIMESTAMPTZ  | NOT NULL                         |
 
 Índices:
-- IX_Payments_ClientGuid — UNIQUE (para idempotencia)
-- IX_Payments_GymId_Date — para queries de ingresos por período
+- UNIQUE idx_payments_client_guid (ClientGuid)
+- INDEX idx_payments_member_creation (MemberId, CreatedAt)
 
-### Otros
-Para las demás tablas (`Products`, `BodyMeasurements`, etc.) se puede extrapolar el formato similar visto en el contexto.
+### BodyMeasurements
+| Columna       | Tipo          | Constraints                      |
+|---------------|---------------|----------------------------------|
+| Id            | UUID          | PK                               |
+| MemberId      | UUID          | FK → Members(Id)                 |
+| WeightKg      | DECIMAL(7,2)  | NOT NULL                         |
+| BodyFatPct    | DECIMAL(5,2)  | NOT NULL                         |
+| RecordedAt    | TIMESTAMPTZ   | NOT NULL                         |
 
----
+Relaciones:
+- BodyMeasurements.MemberId → Members.Id (ON DELETE CASCADE)
 
-## PostgreSQL — Relaciones FK
-
-- `AccessLogs.MemberId` → `Members.Id` (ON DELETE RESTRICT)
-- `MembershipFreezes.MemberId` → `Members.Id` (ON DELETE CASCADE)
-- `BodyMeasurements.MemberId` → `Members.Id` (ON DELETE CASCADE)
-
----
-
-## IndexedDB (Dexie.js) — Stores
-
-### Store: users (v1)
-Primary key: id
-
-Índices:
-- status
-- membershipEndDate
-
-### Store: sync_queue (v1)
-Primary key: guid
+### WorkoutLogs
+| Columna      | Tipo         | Constraints                      |
+|--------------|--------------|----------------------------------|
+| Id           | UUID         | PK                               |
+| MemberId     | UUID         | FK → Members(Id)                 |
+| ClientGuid   | UUID         | UNIQUE, NOT NULL                 |
+| RecordedAt   | TIMESTAMPTZ  | NOT NULL                         |
 
 Índices:
-- type
-- timestamp
+- UNIQUE idx_workoutlogs_client_guid (ClientGuid)
+- INDEX idx_workoutlogs_member_recorded (MemberId, RecordedAt)
 
-### Store: metadata (v1)
-Primary key: key
+### Routines
+| Columna         | Tipo         | Constraints                      |
+|-----------------|--------------|----------------------------------|
+| Id              | UUID         | PK                               |
+| CreatedByUserId | UUID         | FK → AppUsers(Id)                |
+| Name            | VARCHAR(100) | NOT NULL                         |
+| CreatedAt       | TIMESTAMPTZ  | NOT NULL                         |
 
-### Versiones posteriores
+Relaciones:
+- Routines.CreatedByUserId → AppUsers(Id) (ON DELETE RESTRICT)
 
-- **v2**: Agrega `products`, `sales`
-- **v3**: Agrega `error_queue`
-- **v4**: Agrega `measurements`
-- **v5**: Agrega `exercise_catalog`, `routines`, `routine_assignments`, `workout_logs`
+### RoutineAssignments
+| Columna         | Tipo         | Constraints                      |
+|-----------------|--------------|----------------------------------|
+| Id              | UUID         | PK                               |
+| MemberId        | UUID         | FK → Members(Id)                 |
+| RoutineId       | UUID         | FK → Routines(Id)                |
+| AssignedByUserId| UUID         | FK → AppUsers(Id)                |
+| AssignedAt      | TIMESTAMPTZ  | NOT NULL                         |
+
+Relaciones:
+- RoutineAssignments.MemberId → Members.Id (ON DELETE RESTRICT)
+- RoutineAssignments.RoutineId → Routines.Id (ON DELETE CASCADE)
+
+### ExerciseCatalog
+| Columna        | Tipo         | Constraints                      |
+|----------------|--------------|----------------------------------|
+| Id             | UUID         | PK                               |
+| CreatedByUserId| UUID         | FK → AppUsers(Id) (nullable)     |
+| Name           | VARCHAR(100) | NOT NULL                         |
+| CreatedAt      | TIMESTAMPTZ  | NOT NULL                         |
+
+Relaciones:
+- ExerciseCatalog.CreatedByUserId → AppUsers.Id (ON DELETE SET NULL)
 
 ---
 
-## Estrategia de Sincronización
+## Relaciones FK
 
-| Dexie Store       | PostgreSQL Tabla        |
-|-------------------|-------------------------|
-| users             | Members                 |
-| sync_queue        | (No aplica, control offline) |
-| metadata          | (No aplica)            |
-| products          | Products               |
-| sales             | Sales                  |
-| measurements      | BodyMeasurements       |
+- `WorkoutLogs.MemberId` → `Members.Id` (ON DELETE RESTRICT)
+- `RoutineAssignments.RoutineId` → `Routines.Id` (ON DELETE CASCADE)
+- `RoutineAssignments.MemberId` → `Members.Id` (ON DELETE RESTRICT)
+- `SaleLines.SaleId` → `Sales.Id` (ON DELETE CASCADE)
 
 ---
 
-# Notas Finales
-La configuración de esquemas PostgreSQL está inspirada en el código EF Core con traducción de tipos. Para Dexie.js, el archivo utiliza versiones consecutivas para evolucionar los stores. Esto asegura trazabilidad entre esquemas locales y backend.
+## Notas Finales
+La documentación refleja el estado actual del schema basado en `Domain/Entities` y `GymFlowDbContext.cs`. Por cualquier modificación al esquema, generar migraciones EF Core según las reglas del equipo.

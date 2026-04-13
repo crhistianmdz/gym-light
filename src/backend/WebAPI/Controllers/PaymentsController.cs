@@ -3,6 +3,8 @@ using GymFlow.Application.UseCases.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using GymFlow.WebAPI.Extensions;
+
 namespace GymFlow.WebAPI.Controllers;
 
 [ApiController]

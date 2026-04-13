@@ -22,7 +22,7 @@ public class AuthController(
     {
         var result = await loginUseCase.ExecuteAsync(request, ct);
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.ErrorMessage });
+            return BadRequest(new { error = result.Error });
 
         SetRefreshCookie(result.Extra!);
         return Ok(result.Value);
@@ -40,7 +40,7 @@ public class AuthController(
         if (!result.IsSuccess)
         {
             ClearRefreshCookie();
-            return Unauthorized(new { error = result.ErrorMessage });
+            return Unauthorized(new { error = result.Error });
         }
 
         SetRefreshCookie(result.Extra!);

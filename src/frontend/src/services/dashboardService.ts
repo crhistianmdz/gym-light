@@ -1,4 +1,4 @@
-import { db } from '@/db/gymflow.db';
+import { db, PaymentLocal, LocalMember } from '@/db/gymflow.db';
 import { fetchWithAuth } from '@/services/httpClient';
 
 export interface MonthlyBreakdown {
@@ -43,7 +43,7 @@ export const dashboardService = {
       return await res.json();
     } catch {
       const payments = await db.payments.toArray();
-      const filtered = payments.filter(p => {
+      const filtered = payments.filter((p: PaymentLocal) => { // PaymentLocal es el tipo correcto
         const t = new Date(p.timestamp).toISOString().substring(0, 10);
         return t >= from && t <= to;
       });
@@ -79,8 +79,8 @@ export const dashboardService = {
     } catch {
       const members = await db.users.toArray();
       const totalMembers = members.length;
-      const activeMembers = members.filter(m => m.status === 'Active').length;
-      const notRenewed = members.filter(m => m.status === 'Expired').length;
+      const activeMembers = members.filter((m: LocalMember) => m.status === 'Active').length;
+      const notRenewed = members.filter((m: LocalMember) => m.status === 'Expired').length;
       const churnRate = totalMembers > 0 ? (notRenewed / totalMembers) * 100 : 0;
       return { year, totalMembers, activeMembers, notRenewed, churnRate, isOffline: true };
     }

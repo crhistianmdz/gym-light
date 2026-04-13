@@ -28,23 +28,24 @@ export function SyncStatusBadge() {
     <>
       {errorCount > 0 && (
         <span style={{ color: '#f44336', fontWeight: 600, fontSize: 13, marginLeft: 8 }} title={`${errorCount} errores por resolver`}>
-          2c10 {errorCount}
+          ⚠ {errorCount}
         </span>
       )}
-    <span
-      title={config.title}
-      style={{
-        color: config.color,
-        fontWeight: 600,
-        fontSize: 13,
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-      }}
-      aria-live="polite"
-      aria-label={config.title}
-    >
-       {config.label}
-     </span>
-   )}
+      <span
+        title={config.title}
+        style={{
+          color: config.color,
+          fontWeight: 600,
+          fontSize: 13,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+        }}
+        aria-live="polite"
+        aria-label={config.title}
+      >
+        {config.label}
+      </span>
+    </>
+  )
 }

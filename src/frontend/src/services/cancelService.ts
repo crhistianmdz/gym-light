@@ -1,6 +1,6 @@
 import { fetchWithAuth } from '@/services/httpClient'
 import { db } from '@/db/gymflow.db'
-import { v4 as uuid } from 'uuid'
+
 import type { CancelMembershipRequest, CancelMembershipResult } from '@/types/cancel'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -10,7 +10,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
  * En caso de falla, encola la acción en IndexedDB.sync_queue.
  */
 export async function cancelMembership(memberId: string): Promise<CancelMembershipResult> {
-  const clientGuid = uuid()
+  const clientGuid = crypto.randomUUID()
 
   try {
     const res = await fetchWithAuth(`${API_BASE}/api/members/${memberId}/cancel`, {
@@ -36,7 +36,7 @@ export async function cancelMembership(memberId: string): Promise<CancelMembersh
     return result
   } catch {
     // Encolar offline y actualizar IndexedDB de manera optimista
-    await db.sync_queue.add({ guid: clientGuid, type: 'SaleCancel', timestamp: Date.now(), payload: { id: memberId, action: 'cancel', clientGuid } })
+    await db.sync_queue.add({ guid: clientGuid, type: 'SaleCancel', timestamp: Date.now(), payload: JSON.stringify({ id: memberId, action: 'cancel', clientGuid }), isOffline: true, retryCount: 0 })
     await db.users.where('id').equals(memberId).modify({ autoRenewEnabled: false, status: 'Cancelled', cancelledAt: new Date().toISOString() })
 
     throw new Error('OFFLINE_QUEUED')

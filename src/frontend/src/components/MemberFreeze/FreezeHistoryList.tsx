@@ -8,7 +8,7 @@
  *   memberId — Id del socio cuyo historial se muestra
  */
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Alert,
   Box,

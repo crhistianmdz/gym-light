@@ -17,7 +17,7 @@ const tabs = [
 ];
 
 export const MemberDetail: React.FC = () => {
-  const { id } = useParams<'id'>();
+  const { id } = useParams<'id'>() ?? '';
   const navigate = useNavigate();
   const { user } = useAuth();
   const [tabValue, setTabValue] = React.useState<string>(tabs[0].value);
@@ -34,10 +34,10 @@ export const MemberDetail: React.FC = () => {
     <Box>
       <Tabs value={tabValue} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
         {tabs.map((tab) => {
-          if (tab.value === 'freeze' && !['Admin', 'Owner'].includes(userRole)) {
+          if (tab.value === 'freeze' && !['Admin', 'Owner'].includes(userRole ?? '')) {
             return null;
           }
-          if (tab.value === 'cancel' && !['Admin', 'Owner'].includes(userRole) && !isMemberOwner) {
+          if (tab.value === 'cancel' && !['Admin', 'Owner'].includes(userRole ?? '') && !isMemberOwner) {
             return null;
           }
           return <Tab key={tab.value} label={tab.label} value={tab.value} component={Link} to={tab.path} />;
@@ -61,8 +61,8 @@ export const MemberDetail: React.FC = () => {
             <Box>
               <FreezeMembershipPanel
                 memberId={id!}
-                memberStatus={user?.status || 'Active'}
-                membershipEndDate={user?.membershipEndDate || ''}
+                memberStatus={'Active'}
+                membershipEndDate={''}
                 onSuccess={() => console.log('Freeze success!')}
               />
               <FreezeHistoryList memberId={id!} />
@@ -74,8 +74,8 @@ export const MemberDetail: React.FC = () => {
           element={
             <CancelMembershipPanel
               memberId={id!}
-              memberStatus={user?.status || 'Active'}
-              membershipEndDate={user?.membershipEndDate || ''}
+              memberStatus={'Active'}
+              membershipEndDate={''}
               onSuccess={() => console.log('Cancel success!')}
             />
           }

@@ -1,4 +1,5 @@
 using GymFlow.Domain.Enums;
+using GymFlow.Domain.Exceptions;
 
 namespace GymFlow.Domain.Entities;
 

@@ -2,6 +2,7 @@ namespace GymFlow.Application.UseCases;
 
 using GymFlow.Application.Common;
 using GymFlow.Application.DTOs;
+using GymFlow.Domain.Enums;
 using GymFlow.Domain.Interfaces;
 
 public class CancelSaleUseCase
@@ -23,13 +24,13 @@ public class CancelSaleUseCase
         if (sale is null)
             return Result<SaleDto>.NotFound("Venta no encontrada.");
 
-        if (sale.Status == "Cancelled")
+        if (sale.Status == SaleStatus.Cancelled)
             {
-                var dto = sale.ToDto();
-                return Result<SaleDto>.Success(dto);
+                var cancelledDto = sale.ToDto();
+                return Result<SaleDto>.Success(cancelledDto);
             }
             
-            if (sale.Status != "Active")
+            if (sale.Status != SaleStatus.Active)
                 return Result<SaleDto>.ValidationError("Estado desconocido en la venta.");
 
         foreach (var line in sale.Lines)
@@ -38,7 +39,7 @@ public class CancelSaleUseCase
             if (product is null)
                 continue;
 
-            product.Stock += line.Quantity;
+            product.AdjustStock(line.Quantity);
             await _productRepository.UpdateAsync(product, ct);
         }
 

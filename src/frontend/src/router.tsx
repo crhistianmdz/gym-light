@@ -1,9 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import RoutinesPage from './pages/RoutinesPage';
-import MemberDetail from './pages/MemberDetail/MemberDetail';
-import MemberProgress from './pages/MemberProgress/MemberProgress';
-import { SalesPage } from './pages/Sales';
+import { RoutinesPage } from './pages/RoutinesPage';
+import { MemberDetail } from './pages/MemberDetail/MemberDetail';
+import { MemberProgress } from './pages/MemberProgress/MemberProgress';import { SalesPage } from './pages/Sales';
 import DashboardPage from './pages/DashboardPage';
 
 const router = createBrowserRouter([

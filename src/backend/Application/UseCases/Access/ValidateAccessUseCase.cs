@@ -50,7 +50,14 @@ public class ValidateAccessUseCase
             var existingMember = await _members.GetByIdAsync(existingLog.MemberId, ct);
             return Result<AccessValidationDto>.Success(new AccessValidationDto(
                 Allowed: existingLog.WasAllowed,
-                Member: existingMember is not null ? MapToDto(existingMember) : null,
+                Member: existingMember is not null ? new MemberDto(
+                    Id: existingMember.Id,
+                    FullName: existingMember.FullName,
+                    PhotoWebPUrl: existingMember.PhotoWebPUrl,
+                    Status: existingMember.Status,
+                    MembershipEndDate: existingMember.MembershipEndDate,
+                    AutoRenewEnabled: existingMember.AutoRenewEnabled,
+                    CancelledAt: existingMember.CancelledAt) : null,
                 DenialReason: existingLog.DenialReason
             ));
         }
@@ -88,6 +95,8 @@ public class ValidateAccessUseCase
             FullName: member.FullName,
             PhotoWebPUrl: member.PhotoWebPUrl,
             Status: member.Status,
-            MembershipEndDate: member.MembershipEndDate
+            MembershipEndDate: member.MembershipEndDate,
+            AutoRenewEnabled: member.AutoRenewEnabled,
+            CancelledAt: member.CancelledAt
         );
 }

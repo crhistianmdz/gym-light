@@ -1,9 +1,11 @@
+using GymFlow.Domain.Enums;
 using GymFlow.Application.DTOs.BodyMeasurements;
 using GymFlow.Application.UseCases.BodyMeasurements;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using GymFlow.Domain.Enums;
 
 namespace GymFlow.WebAPI.Controllers;
 
@@ -43,12 +45,14 @@ public class BodyMeasurementsController : ControllerBase
 
         var result = await _addUseCase.ExecuteAsync(memberId, callerId.Value, callerRole, request, ct);
 
-        return result.Switch(
-            created => CreatedAtAction(nameof(Add), new { id = created.Value.Id }, created.Value),
-            alreadyProcessed => Ok(alreadyProcessed.Value),
-            notFound => NotFound(new { Message = notFound.Error }),
-            forbidden => Forbid()
-        );
+        if (result.IsSuccess)
+    return CreatedAtAction(nameof(Add), new { id = result.Value.Id }, result.Value);
+else if (result.StatusCode == 403)
+    return Forbid();
+else if (result.StatusCode == 404)
+    return NotFound(new { Message = result.Error });
+else
+    return BadRequest(result.Error);
     }
 
     /// <summary>
@@ -68,11 +72,14 @@ public class BodyMeasurementsController : ControllerBase
 
         var result = await _getUseCase.ExecuteAsync(memberId, callerId.Value, callerRole, ct);
 
-        return result.Switch(
-            ok => Ok(ok.Value),
-            notFound => NotFound(new { Message = notFound.Error }),
-            forbidden => Forbid()
-        );
+        if (result.IsSuccess)
+    return Ok(result.Value);
+else if (result.StatusCode == 403)
+    return Forbid();
+else if (result.StatusCode == 404)
+    return NotFound(new { Message = result.Error });
+else
+    return BadRequest(result.Error);
     }
 
     private Guid? GetCallerId() =>

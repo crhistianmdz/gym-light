@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { Snackbar, Button, TextField, Typography, Alert, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { db } from '@/db/gymflow.db';
+import React, { useState } from 'react';
+import { Snackbar, Button, Typography, Alert, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { saleService } from '@/services/saleService';
+import type { ProductResponse } from '@/services/saleService';
 import { SyncStatusBadge } from '@/components/CheckInPanel/SyncStatusBadge';
+import { ProductRow } from './ProductRow';
 
 export function SalePanel() {
-  const [products, setProducts] = useState([]);
-  const [selectedLines, setSelectedLines] = useState([]);
+  const [products, setProducts] = useState<ProductResponse[]>([]);
+  const [selectedLines, setSelectedLines] = useState<{ product: ProductResponse; quantity: number }[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [syncPending, setSyncPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const loadProducts = async () => {
     setLoading(true);
@@ -24,7 +24,7 @@ export function SalePanel() {
     }
   };
 
-  const handleAddLine = (product, quantity) => {
+  const handleAddLine = (product: ProductResponse, quantity: number) => {
     setSelectedLines([...selectedLines, { product, quantity }]);
   };
 
@@ -66,11 +66,13 @@ export function SalePanel() {
         </TableHead>
         <TableBody>
           {products.map(product => (
-          <ProductRow key={product.id} product={product} onAddLine={handleAddLine} />
-            <TableRow key={product.id}>
-              <TableCell>{product.name}</TableCell>
-              <TableCell>{product.stock}</TableCell>
-            </TableRow>
+            <React.Fragment key={product.id}>
+              <ProductRow product={product} onAddLine={handleAddLine} />
+              <TableRow>
+                <TableCell>{product.name}</TableCell>
+                <TableCell>{product.stock}</TableCell>
+              </TableRow>
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>

@@ -38,9 +38,8 @@ const NETWORK_TIMEOUT_MS = 2000 // RFC §3: timeout >2s activa fallback offline
  *   CA-3: Encola AccessLog en sync_queue con ClientGuid
  */
 export async function checkInMember(
-  performedByUserId?: string,
-  memberId: string,
   performedByUserId: string,
+  memberId: string,
 ): Promise<AccessResult> {
   if (!performedByUserId || performedByUserId === '00000000-0000-0000-0000-000000000000') {
     throw new Error('performedByUserId is required for check-in traceability');
@@ -154,7 +153,7 @@ async function validateOffline(
     member: {
       id: member.id,
       fullName: member.fullName,
-      photoWebP: member.photoWebP,
+      photoWebP: member.photoWebP ?? '',
       status: member.status,
       membershipEndDate: member.membershipEndDate,
     },

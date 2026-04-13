@@ -14,16 +14,16 @@ public static class ProductSeeder
 
         var products = new List<Product>
         {
-            Product.Create("AGU-500", "Agua mineral 500ml", null, 150, 100),
-            Product.Create("BAR-PRO", "Barra de proteína", null, 800, 50),
-            Product.Create("ISO-500", "Bebida isotónica 500ml", null, 350, 80),
-            Product.Create("SUP-PRO", "Suplemento proteico 1kg", null, 4500, 30),
-            Product.Create("GUA-ENT", "Guantes de entrenamiento", null, 2200, 20),
-            Product.Create("CIN-MUN", "Cinta para muñecas", null, 950, 40),
-            Product.Create("TOA-DEP", "Toalla deportiva", null, 1800, 25),
-            Product.Create("SHA-CHO", "Shake de chocolate 350ml", null, 600, 60),
-            Product.Create("CRE-MON", "Creatina monohidratada 300g", null, 3200, 35),
-            Product.Create("CAM-DEP", "Camiseta deportiva", null, 2800, 45),
+            Product.Create("Agua mineral 500ml",        150m,  100, sku: "AGU-500"),
+            Product.Create("Barra de proteína",         800m,   50, sku: "BAR-PRO"),
+            Product.Create("Bebida isotónica 500ml",    350m,   80, sku: "ISO-500"),
+            Product.Create("Suplemento proteico 1kg",  4500m,   30, sku: "SUP-PRO"),
+            Product.Create("Guantes de entrenamiento", 2200m,   20, sku: "GUA-ENT"),
+            Product.Create("Cinta para muñecas",        950m,   40, sku: "CIN-MUN"),
+            Product.Create("Toalla deportiva",         1800m,   25, sku: "TOA-DEP"),
+            Product.Create("Shake de chocolate 350ml",  600m,   60, sku: "SHA-CHO"),
+            Product.Create("Creatina monohidratada 300g", 3200m, 35, sku: "CRE-MON"),
+            Product.Create("Camiseta deportiva",       2800m,   45, sku: "CAM-DEP"),
         };
 
         await context.Products.AddRangeAsync(products, ct);

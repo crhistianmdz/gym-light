@@ -1,5 +1,7 @@
 using GymFlow.Domain.Entities;
 
+using GymFlow.Domain.Models;
+
 namespace GymFlow.Domain.Interfaces;
 
 /// <summary>

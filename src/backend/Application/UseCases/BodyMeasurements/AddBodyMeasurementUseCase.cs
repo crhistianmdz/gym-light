@@ -1,5 +1,5 @@
 using GymFlow.Application.DTOs.BodyMeasurements;
-using GymFlow.Application.Results;
+using GymFlow.Application.Common;
 using GymFlow.Domain.Entities;
 using GymFlow.Domain.Interfaces;
 using GymFlow.Domain.Enums;
@@ -33,20 +33,20 @@ public class AddBodyMeasurementUseCase
         CancellationToken ct)
     {
         // Check if the member exists
-        var memberExists = await _memberRepository.ExistsAsync(memberId, ct);
-        if (!memberExists)
-            return Result.NotFound<BodyMeasurementDto>("Member not found.");
+        var member = await _memberRepository.GetByIdAsync(memberId, ct);
+        if (member is null)
+            return Result<BodyMeasurementDto>.NotFound("Member not found.");
 
         // Check ownership and roles
         if (callerRole == UserRole.Member && callerId != memberId)
-            return Result.Forbidden<BodyMeasurementDto>("Members can only add measurements for themselves.");
+            return Result<BodyMeasurementDto>.Forbidden("Members can only add measurements for themselves.");
 
         // Check for idempotency
         var existing = await _bodyMeasurementRepository.GetByClientGuidAsync(request.ClientGuid, ct);
         if (existing is not null)
         {
-            var dto = MapToDto(existing);
-            return Result.AlreadyProcessed(dto);
+            var existingDto = MapToDto(existing);
+            return Result<BodyMeasurementDto>.Success(existingDto);
         }
 
         // Create the measurement
@@ -68,7 +68,7 @@ public class AddBodyMeasurementUseCase
 
         await _bodyMeasurementRepository.AddAsync(measurement, ct);
 
-        return Result.Created(MapToDto(measurement));
+        return Result<BodyMeasurementDto>.Success(MapToDto(measurement));
     }
 
     private static BodyMeasurementDto MapToDto(BodyMeasurement measurement)

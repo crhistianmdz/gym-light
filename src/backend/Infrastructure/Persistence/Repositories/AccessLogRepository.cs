@@ -1,6 +1,7 @@
 using GymFlow.Domain.Entities;
 using GymFlow.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using GymFlow.Domain.Models;
 
 namespace GymFlow.Infrastructure.Persistence.Repositories;
 
@@ -23,6 +24,8 @@ public class AccessLogRepository : IAccessLogRepository
     {
         await _context.AccessLogs.AddAsync(accessLog, ct);
         await _context.SaveChangesAsync(ct);
+    }
+
     public async Task<(IEnumerable<AccessLog> Items, int TotalCount)> GetPagedAsync(
         AccessLogFilter filter, int page, int pageSize, CancellationToken ct = default)
     {

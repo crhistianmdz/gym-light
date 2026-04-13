@@ -66,10 +66,12 @@ public class UnfreezeMembershipUseCase
         await _memberRepo.UpdateAsync(member, ct);
 
         return Result<MemberDto>.Success(new MemberDto(
-            member.Id,
-            member.FullName,
-            member.PhotoWebPUrl,
-            member.Status,
-            member.MembershipEndDate));
+            Id: member.Id,
+            FullName: member.FullName,
+            PhotoWebPUrl: member.PhotoWebPUrl,
+            Status: member.Status,
+            MembershipEndDate: member.MembershipEndDate,
+            AutoRenewEnabled: member.AutoRenewEnabled,
+            CancelledAt: member.CancelledAt));
     }
 }

@@ -1,4 +1,4 @@
-import Dexie, { type EntityTable } from 'dexie';
+import Dexie, { type Table } from 'dexie';
 
 // —— Core types ——
 export type MemberStatus = 'Active' | 'Frozen' | 'Expired';
@@ -40,19 +40,30 @@ export interface PaymentLocal {
   createdByUserId: string;
 }
 
+// Type used to track failed sync attempts
+export interface ErrorQueueItem {
+  guid: string;
+  type: SyncEventType;
+  payload: string;
+  retryCount: number;
+  timestamp: number;
+  lastError?: string;
+  failedAt?: number;
+}
+
 class GymflowDB extends Dexie {
-  users!: EntityTable<LocalMember, 'id'>;
-  sync_queue!: EntityTable<SyncQueueItem, 'guid'>;
-  error_queue!: EntityTable<any, 'id'>;
-  metadata!: EntityTable<any, 'key'>;
-  products!: EntityTable<any, 'id'>;
-  sales!: EntityTable<any, 'id'>;
-  payments!: EntityTable<PaymentLocal, 'id'>;
-  measurements!: EntityTable<any, 'id'>;
-  exercise_catalog!: EntityTable<any, 'id'>;
-  routines!: EntityTable<any, 'id'>;
-  routine_assignments!: EntityTable<any, 'id'>;
-  workout_logs!: EntityTable<any, 'id'>;
+  users!: Table<LocalMember, string>;
+  sync_queue!: Table<SyncQueueItem, string>;
+  error_queue!: Table<ErrorQueueItem, string>;
+  metadata!: Table<any, string>;
+  products!: Table<any, string>;
+  sales!: Table<any, string>;
+  payments!: Table<PaymentLocal, string>;
+  measurements!: Table<any, string>;
+  exercise_catalog!: Table<any, string>;
+  routines!: Table<any, string>;
+  routine_assignments!: Table<any, string>;
+  workout_logs!: Table<any, string>;
 
   constructor() {
     super('GymflowDB');

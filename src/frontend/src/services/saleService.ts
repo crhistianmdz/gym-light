@@ -37,6 +37,7 @@ export interface SaleResponse {
     status: string;
     total: number;
     lines: SaleLineResponse[];
+    isOffline?: boolean;
 }
 
 // Servicio principal con funciones específicas
@@ -50,7 +51,7 @@ export const saleService = {
             return products;
         } catch (error) {
             const offlineProducts = await db.products.toArray();
-            return offlineProducts.map(product => ({
+            return offlineProducts.map((product: ProductResponse) => ({
                 ...product,
                 isLowStock: product.stock <= product.initialStock * 0.2,
             }));
@@ -79,7 +80,8 @@ export const saleService = {
                 type: 'Sale',
                 payload: JSON.stringify(request),
                 timestamp: Date.now(),
-                retryCount: 0
+                retryCount: 0,
+                isOffline: true,
             });
             await db.sales.put({
                 ...request,
@@ -125,6 +127,7 @@ export const saleService = {
         payload: JSON.stringify({ id: saleId }),
         timestamp: Date.now(),
         retryCount: 0,
+        isOffline: true,
       });
       await db.sales.update(saleId, { status: 'cancelled' });
       throw new Error('OFFLINE_QUEUED');

@@ -24,22 +24,14 @@ import {
 } from '@mui/material';
 import { CloudOff, Delete } from '@mui/icons-material';
 import { saleService } from '@/services/saleService';
+import type { SaleResponse } from '@/services/saleService';
 import { useAuth } from '@/contexts/AuthContext';
-
-type Sale = {
-  id: string;
-  timestamp: string;
-  status: 'pending' | 'synced' | 'cancelled';
-  total: number;
-  lines: { quantity: number }[];
-  isOffline?: boolean;
-};
 
 export const SalesHistory: React.FC = () => {
   const { user } = useAuth();
   const role = user?.role;
 
-  const [sales, setSales] = useState<Sale[]>([]);
+  const [sales, setSales] = useState<SaleResponse[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -136,7 +128,7 @@ export const SalesHistory: React.FC = () => {
                   )}
                 </TableCell>
                 <TableCell>${sale.total.toFixed(2)}</TableCell>
-                <TableCell>{sale.lines.reduce((sum, line) => sum + line.quantity, 0)}</TableCell>
+                <TableCell>{sale.lines.reduce((sum: number, line: { quantity: number }) => sum + line.quantity, 0)}</TableCell>
                 <TableCell>
                   {['Admin', 'Owner'].includes(role || '') && sale.status !== 'cancelled' && (
                     <IconButton

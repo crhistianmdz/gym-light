@@ -1,4 +1,5 @@
 using GymFlow.Domain.Entities;
+using GymFlow.Domain.Enums;
 using GymFlow.Domain.Interfaces;
 using GymFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +43,7 @@ public class MemberRepository : IMemberRepository
             .CountAsync(m => m.Status == MemberStatus.Active, ct);
 
         var notRenewed = await _context.Members
-            .CountAsync(m => !m.AutoRenewEnabled && m.MembershipEndDate < DateTime.UtcNow, ct);
+            .CountAsync(m => !m.AutoRenewEnabled && m.MembershipEndDate < DateOnly.FromDateTime(DateTime.UtcNow), ct);
 
         return (totalMembers, activeMembers, notRenewed);
     }

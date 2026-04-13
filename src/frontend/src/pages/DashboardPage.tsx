@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Card, CardContent, Alert, Button, Select, MenuItem, TextField, CircularProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Alert, Button, Select, MenuItem, TextField } from '@mui/material';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { dashboardService } from '@/services/dashboardService';

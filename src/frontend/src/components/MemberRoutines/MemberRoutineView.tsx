@@ -12,7 +12,7 @@ interface Props {
   memberId: string
 }
 
-function exerciseToEntry(ex: RoutineExercise): WorkoutEntry {
+export function exerciseToEntry(ex: RoutineExercise): WorkoutEntry {
   return {
     routineExerciseId: ex.id ?? '',
     exerciseName: ex.customName ?? '—',

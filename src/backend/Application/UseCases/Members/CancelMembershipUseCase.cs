@@ -3,6 +3,7 @@ using GymFlow.Application.DTOs;
 using GymFlow.Domain.Entities;
 using GymFlow.Domain.Enums;
 using GymFlow.Domain.Interfaces;
+using GymFlow.Domain.Exceptions;
 
 namespace GymFlow.Application.UseCases.Members;
 

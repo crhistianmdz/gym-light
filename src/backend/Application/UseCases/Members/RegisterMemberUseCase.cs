@@ -79,7 +79,9 @@ public class RegisterMemberUseCase
             FullName: member.FullName,
             PhotoWebPUrl: member.PhotoWebPUrl,
             Status: member.Status,
-            MembershipEndDate: member.MembershipEndDate
+            MembershipEndDate: member.MembershipEndDate,
+            AutoRenewEnabled: member.AutoRenewEnabled,
+            CancelledAt: member.CancelledAt
         ));
     }
 }

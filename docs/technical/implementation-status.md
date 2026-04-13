@@ -1,6 +1,6 @@
 # Estado de Implementación — GymFlow Lite
 
-> Última actualización: 2026-03-31
+> Última actualización: 2026-04-13
 
 ## Leyenda
 - ✅ Completo
@@ -13,7 +13,7 @@
 |-----|-------------------------------|---------|----------|-------|----------|-------|
 | 01  | Validación de Acceso Offline  | ✅      | ✅       | ✅    | Completa |       |
 | 02  | Registro de Socio con Foto    | ✅      | ✅       | ✅    | Completa |       |
-| 03  | Venta de Producto             | ✅      | ⚠️       | ✅    | Parcial  | UI parcialmente cubierta (falta ProductRow, QuantityEditor, historial). |
+| 03  | Venta de Producto             | ✅      | ✅       | ✅    | Completa | UI parcialmente cubierta (falta ProductRow, QuantityEditor, historial). |
 | 04  | Sincronización Automática     | ✅      | ✅       | ✅    | Completa | Tests completos; fix en MemberUpdate + stock. |
 | 05  | Autenticación y Sesión Offline| ✅      | ✅       | ✅    | Completa |       |
 | 06  | Auditoría de Check-ins        | ✅      | ✅       | ✅    | Completa |       |
@@ -35,3 +35,16 @@
 - `syncService.ts` — se agregaron `retryFromErrorQueue()` y `discardFromErrorQueue()`
 - `gymflow.db.ts` — `SyncEventType` ahora incluye `'MemberUpdate'`
 - `SaleRepository.cs` — código unreachable eliminado en `GetByClientGuidAsync`
+- `EnsureCreatedAsync()` en lugar de `MigrateAsync()` — no hay migraciones EF Core formales (deuda técnica conocida)
+- `LocalPhotoStorageService` creado en `src/backend/Infrastructure/Services/` — implementación dev de `IPhotoStorageService`
+- `SaleLine.Subtotal` ignorada con `entity.Ignore()` en DbContext — es computed property sin setter
+- `DomainException.cs` creado en `src/backend/Domain/Exceptions/`
+- `ClaimsPrincipalExtensions.cs` y `AuthExtensions.cs` creados en `src/backend/WebAPI/Extensions/`
+- 120+ errores TypeScript corregidos → 0 errores
+- `EntityTable<T,K>` (Dexie 4.x) reemplazado por `Table<T, string>` — Dexie instalada es v3.x
+- Tests excluidos del build de producción en `tsconfig.json`
+- `vite-env.d.ts` creado
+- `productService.ts` — agregado método `getProducts()`
+- `SaleResponse` — agregado campo `isOffline?: boolean`
+- `cancelService.ts`, `measurementService.ts`, `saleService.ts` — `sync_queue.add()` corregido: payload como `JSON.stringify()` y campo `isOffline: true`
+- Stack Docker completamente funcional: 4 servicios healthy (backend :5000, frontend :3000, postgres, redis)

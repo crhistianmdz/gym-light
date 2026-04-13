@@ -29,9 +29,10 @@ export const measurementService = {
         payload: JSON.stringify({ memberId, ...request }),
         timestamp: Date.now(),
         retryCount: 0,
+        isOffline: true,
       });
 
-      return localMeasurement as MeasurementDto; // Simulate server response format
+      return { ...localMeasurement, id: '', recordedById: '' } as MeasurementDto; // Simulate server response format
     }
   },
 
@@ -60,9 +61,7 @@ export const measurementService = {
         .equals(memberId)
         .toArray();
 
-      return offlineMeasurements.sort(
-        (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime()
-      );
+return offlineMeasurements.sort((a: MeasurementDto, b: MeasurementDto) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime());
     }
   },
 };

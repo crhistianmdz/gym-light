@@ -3,6 +3,8 @@ using GymFlow.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using GymFlow.WebAPI.Filters;
+
 namespace GymFlow.WebAPI.Controllers;
 
 /// <summary>

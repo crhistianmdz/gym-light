@@ -52,5 +52,20 @@ public class Product
 
         Stock += quantity;
         UpdatedAt = DateTime.UtcNow;
+        }
+
+    public void Update(string? sku, string name, string? description, decimal price)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("El nombre del producto es obligatorio.", nameof(name));
+
+        if (price <= 0)
+            throw new ArgumentException("El precio debe ser positivo.", nameof(price));
+
+        Sku = sku;
+        Name = name;
+        Description = description;
+        Price = price;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

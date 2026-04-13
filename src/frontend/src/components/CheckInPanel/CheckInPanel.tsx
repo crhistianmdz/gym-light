@@ -111,7 +111,7 @@ export function CheckInPanel({ currentUserId }: CheckInPanelProps) {
       )}
 
       {/* Error del sistema */}
-      {(!currentUserId.trim() && (
+      {!currentUserId.trim() && (
         <div
           role='alert'
           style={{
@@ -126,7 +126,8 @@ export function CheckInPanel({ currentUserId }: CheckInPanelProps) {
         >
           ⚠️ No se puede registrar el acceso: sesión sin usuario identificado. Por favor, cerrá sesión e ingresá nuevamente.
         </div>
-      )) || (status === 'error' && error && (
+      )}
+      {status === 'error' && error && (
         <div
           role="alert"
           style={{

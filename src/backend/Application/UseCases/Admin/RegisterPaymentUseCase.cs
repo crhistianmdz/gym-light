@@ -2,7 +2,10 @@ using GymFlow.Application.DTOs.Metrics;
 using GymFlow.Domain.Entities;
 using GymFlow.Domain.Interfaces;
 
+using GymFlow.Application.Common;
+
 namespace GymFlow.Application.UseCases.Admin;
+using GymFlow.Domain.Enums;
 
 public class RegisterPaymentUseCase
 {

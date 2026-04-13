@@ -2,6 +2,8 @@ namespace GymFlow.WebAPI.Extensions;
 
 using System.Text;
 using GymFlow.Application.Interfaces;
+using GymFlow.Application.UseCases;
+using GymFlow.Application.UseCases.Admin;
 using GymFlow.Application.UseCases.Auth;
 using GymFlow.Application.UseCases.Members;
 using GymFlow.Domain.Interfaces;
