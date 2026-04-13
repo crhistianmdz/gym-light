@@ -1,0 +1,56 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches:
+      - develop
+      - staging
+  pull_request:
+    branches:
+      - develop
+      - staging
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: src/frontend/package-lock.json
+
+      - name: Restore NuGet packages
+        run: dotnet restore src/backend
+
+      - name: Install Node dependencies
+        working-directory: src/frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: src/frontend
+        run: npm run lint
+
+      - name: Build .NET backend
+        run: dotnet build src/backend --no-restore
+
+      - name: Build frontend
+        working-directory: src/frontend
+        run: npm run build
+
+      - name: Test .NET backend
+        run: dotnet test src/backend/Tests --no-build
+
+      - name: Test frontend
+        working-directory: src/frontend
+        run: npm test -- --run

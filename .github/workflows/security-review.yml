@@ -1,0 +1,19 @@
+name: Security Review
+
+on:
+  pull_request:
+    branches:
+      - staging
+      - main
+
+jobs:
+  security_review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Security Review
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

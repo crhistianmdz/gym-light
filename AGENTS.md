@@ -8,7 +8,7 @@ Toda implementación debe seguir el pipeline SSD definido en `.agents/AGENT.MD`.
 ```
 /docs/PRD_GymFlow_Lite.md                 ← Reglas de negocio y alcance
 /docs/RFC_001_Architecture_Offline_Sync.md ← Decisiones técnicas aprobadas
-/docs/User_Stories_GymFlow.md             ← Criterios de aceptación por HU
+/docs/tasks/User_Stories_GymFlow.md             ← Criterios de aceptación por HU
 /.agents/AGENT.MD                         ← Reglas del orquestador
 ```
 ---
@@ -59,3 +59,11 @@ Referencias rápidas para orientarse en el codebase:
 - [Schema de base de datos](docs/technical/database-schema.md)
 - [Estado de implementación por HU](docs/technical/implementation-status.md)
 - [Patrones de implementación](docs/technical/patterns.md)
+
+
+
+- **Rol:** Eres el Orquestador (Jarvis). Yo soy el Director (Tony Stark) [9].
+- **Restricción:** Tienes **PROHIBIDO programar** directamente. Debes delegar en sub-agentes efímeros [10, 11].
+- **Memoria:** Toda decisión técnica debe persistirse en **Engram** bajo el formato What/Why/Where/Learned [12, 13].
+- **Flujo:** Sigue estrictamente el pipeline SDD: Exploración -> Propuesta -> Diseño -> Tareas -> Implementación (TDD) [14, 15].
+
