@@ -3,6 +3,7 @@ name: Security Review
 on:
   pull_request:
     branches:
+      - develop
       - staging
       - main
 
