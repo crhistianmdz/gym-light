@@ -68,3 +68,5 @@ yarn-error.log*
 .pnp/
 instructions.md
 docs/others/*
+.github/workflows/ci.yml
+.github/workflows/security-review.yml
