@@ -1,6 +1,6 @@
 # HU-014: Despliegue Local
 
-**Status**: 🟡 In Progress
+**Status**: ✅ Completed
 **Owner**: @gymflow-tech-lead
 **Created**: 2026-06-10
 **Priority**: Should
@@ -50,21 +50,21 @@ Facilitar que un dev (interno o contribuidor externo) pueda clonar el repo y ten
 ## ✅ Requirements
 
 ### MUST (obligatorios)
-- [ ] Un solo comando (`docker compose up -d`) levanta los 4 servicios healthy.
-- [ ] El frontend sirve en `http://localhost:3000` y muestra la UI de login.
-- [ ] El backend responde en `http://localhost:5000/health` con 200 OK.
-- [ ] La DB persiste entre reinicios (volúmenes Docker).
-- [ ] Las migraciones de EF Core se aplican automáticamente al primer arranque (solo dev).
-- [ ] Hay un seed con datos de prueba (1 gimnasio, 1 admin, 10 socios, 5 productos).
-- [ ] README.md tiene una sección "Local Setup" paso a paso con copy-paste-ready.
-- [ ] `docker compose down -v` borra TODO (DB incluida) para empezar de cero.
+- [x] Un solo comando (`docker compose up -d`) levanta los 4 servicios healthy.
+- [x] El frontend sirve en `http://localhost:3000` y muestra la UI de login.
+- [x] El backend responde en `http://localhost:5000/health` con 200 OK.
+- [x] La DB persiste entre reinicios (volúmenes Docker).
+- [x] Las migraciones de EF Core se aplican automáticamente al primer arranque (solo dev).
+- [x] Hay un seed con datos de prueba (1 gimnasio, 1 admin, 10 socios, 5 productos).
+- [x] README.md tiene una sección "Local Setup" paso a paso con copy-paste-ready.
+- [x] `docker compose down -v` borra TODO (DB incluida) para empezar de cero.
 
 ### SHOULD (importantes, no bloqueantes)
-- [ ] `.env.example` documenta todas las variables de entorno necesarias.
-- [ ] Hay un `Makefile` (o equivalente) con targets: `make dev`, `make stop`, `make reset`, `make logs`, `make seed`.
-- [ ] Hay un script `scripts/doctor.sh` que valida que Docker, Docker Compose, puertos libres, etc. estén OK antes de empezar.
-- [ ] La sección de Troubleshooting cubre al menos: puertos ocupados, error de migraciones, error de permisos en volúmenes.
-- [ ] El primer `docker compose up` tarda menos de 5 minutos (incluyendo build de imágenes).
+- [x] `.env.example` documenta todas las variables de entorno necesarias.
+- [x] Hay un `Makefile` (o equivalente) con targets: `make dev`, `make stop`, `make reset`, `make logs`, `make seed`.
+- [x] Hay un script `scripts/doctor.sh` que valida que Docker, Docker Compose, puertos libres, etc. estén OK antes de empezar.
+- [x] La sección de Troubleshooting cubre al menos: puertos ocupados, error de migraciones, error de permisos en volúmenes.
+- [x] El primer `docker compose up` tarda menos de 5 minutos (incluyendo build de imágenes).
 
 ### COULD (deseables, futuro)
 - [ ] Hot-reload del backend (dotnet watch dentro del container).
