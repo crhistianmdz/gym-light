@@ -226,7 +226,22 @@ public DbSet<RoutineExercise> RoutineExercises { get; set; }
             e.Property(p => p.Notes).HasMaxLength(500);
             e.HasOne<AppUser>().WithMany().HasForeignKey(p => p.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
         });
+
+        // ── PluginRegistry (HU-015) ─────────────────────────────────────────────────────────
+        modelBuilder.Entity<PluginRegistry>(e =>
+        {
+            e.ToTable("PluginRegistry");
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Id).HasMaxLength(100);
+            e.Property(p => p.Name).IsRequired().HasMaxLength(200);
+            e.Property(p => p.Version).IsRequired().HasMaxLength(50);
+            e.Property(p => p.OfflineCapable).IsRequired();
+            e.Property(p => p.Enabled).IsRequired();
+            e.Property(p => p.InstalledAt).IsRequired();
+            e.Property(p => p.LastUpdated).IsRequired();
+        });
     }
 
     public DbSet<Payment> Payments { get; set; }
+    public DbSet<PluginRegistry> PluginRegistry { get; set; }
 }

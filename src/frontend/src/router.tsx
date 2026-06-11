@@ -2,8 +2,10 @@ import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { RoutinesPage } from './pages/RoutinesPage';
 import { MemberDetail } from './pages/MemberDetail/MemberDetail';
-import { MemberProgress } from './pages/MemberProgress/MemberProgress';import { SalesPage } from './pages/Sales';
+import { MemberProgress } from './pages/MemberProgress/MemberProgress';
+import { SalesPage } from './pages/Sales';
 import DashboardPage from './pages/DashboardPage';
+import PluginsPage from './pages/PluginsPage';
 
 const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/members" replace /> },
@@ -12,6 +14,7 @@ const router = createBrowserRouter([
   { path: '/routines', element: <RoutinesPage /> },
   { path: '/sales', element: <SalesPage /> },
   { path: '/dashboard', element: <DashboardPage /> },
+  { path: '/admin/plugins', element: <PluginsPage /> },
   { path: '*', element: <Navigate to="/" replace /> },
 ]);
 

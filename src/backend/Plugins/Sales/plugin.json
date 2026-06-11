@@ -1,0 +1,9 @@
+{
+  "id": "sales",
+  "name": "Sales",
+  "version": "1.0.0",
+  "offlineCapable": false,
+  "config": {
+    "enabled": false
+  }
+}

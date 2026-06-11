@@ -1,0 +1,9 @@
+{
+  "id": "routines",
+  "name": "Routines",
+  "version": "1.0.0",
+  "offlineCapable": true,
+  "config": {
+    "enabled": false
+  }
+}

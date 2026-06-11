@@ -1,0 +1,9 @@
+{
+  "id": "anthropometry",
+  "name": "Anthropometry",
+  "version": "1.0.0",
+  "offlineCapable": true,
+  "config": {
+    "enabled": false
+  }
+}

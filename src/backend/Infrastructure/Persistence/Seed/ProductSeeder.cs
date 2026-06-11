@@ -34,7 +34,8 @@ public static class ProductSeeder
         }
 
         // Seed Admin User
-        if (!await context.Users.AnyAsync(ct))
+        // BUGFIX: DbContext has AppUsers, not Users (pre-existing issue)
+        if (!await context.AppUsers.AnyAsync(ct))
         {
             // Password: admin123 (BCrypt hash for "admin123")
             const string passwordHash = "$2a$11$OvXHWz9E4T2CQvV3B5X3EOZ8Z6ZQZ1Z2Z3Z4Z5Z6Z7Z8Z9Z0Z1Z2Z3Z";
@@ -45,7 +46,7 @@ public static class ProductSeeder
                 passwordHash,
                 UserRole.Admin
             );
-            context.Users.Add(admin);
+            context.AppUsers.Add(admin);
         }
 
         // Seed Members (10 demo members)

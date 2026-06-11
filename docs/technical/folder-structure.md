@@ -80,10 +80,26 @@
     ├── hu08-cancellation.md        ← Proceso de cancelaciones
     ├── hu09-anthropometry.md       ← HU para antropometría
     ├── hu10-progress-chart.md      ← HU sobre gráficos de progreso
-    └── hu11-routines.md            ← HU sobre rutinas personalizadas
+    ├── hu11-routines.md            ← HU sobre rutinas personalizadas
+    ├── hu15-plugin-system.md      ← HU sobre sistema de plugins
+    └── guides/
+        └── how-to-create-a-plugin.md ← Guía para autores de plugins
+```
+
+## Plugins (`src/backend/Plugins/`)
+
+```
+/src/backend/Plugins/
+├── GymFlow.Plugins.Abstractions/ ← Interfaces y abstracciones
+│   ├── IPlugin.cs
+│   └── PluginMetadata.cs
+├── Anthropometry/                ← Plugin de ejemplo
+├── Routines/
+└── Sales/
 ```
 
 ## Docker (`docker/`)
+
 ```
 /docker/
 ├── docker-compose.yml  ← Configuración principal de Docker Compose

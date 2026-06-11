@@ -215,7 +215,7 @@ El roadmap está dividido en **3 horizontes temporales** con foco diferente:
 
 | Initiative | Prioridad | Estado |
 |---|---|---|
-| Sistema de plugins opt-in (HU-015) | 🔴 Alta | Pendiente |
+| Sistema de plugins opt-in (HU-015) | 🔴 Alta | ✅ Implementado |
 | CLI de GymFlow: install, upgrade, backup, doctor (HU-016) | 🔴 Alta | Pendiente |
 | Schema versioning + migraciones aditivas (HU-017) | 🔴 Alta | Pendiente |
 | Installer one-liner (Docker Compose pulido) | 🔴 Alta | Pendiente |

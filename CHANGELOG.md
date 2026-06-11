@@ -13,10 +13,12 @@
 
 ### En progreso (Fase C del roadmap — ver RFC-002)
 - HU-014: Despliegue local (cierre del pendiente abandonado)
-- HU-015: Sistema de módulos/plugins opt-in (corazón de la visión self-hosted)
 - HU-016: CLI de GymFlow (`install`, `upgrade`, `backup`, `doctor`)
 - HU-017: Schema versioning + migraciones aditivas
 - ADR-008: Sistema de módulos opt-in (arquitectura)
+
+### Added
+- **HU-015: Sistema de plugins opt-in** — arquitectura extensible con IPlugin interface, PluginLoader para descubrimiento en runtime, PluginRegistry en PostgreSQL para estado enabled/disabled, 3 plugins base (Anthropometry, Routines, Sales), admin API (`/api/plugins`) y UI en `/admin/plugins`
 
 ---
 

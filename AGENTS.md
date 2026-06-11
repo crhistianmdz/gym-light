@@ -12,7 +12,8 @@
 
 - **HU 01-12**: implemented and committed (backend + frontend + tests). The 12/12 backlog is complete.
 - **HU 13** (CI/CD): implemented. Workflows (`ci.yml`, `release-please.yml`, `security-review.yml`) are in place; technical doc is in `docs/technical/hu13-cicd.md`.
-- **HU 14+**: pending — see [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico) for the next planned work items (plugins opt-in, CLI, schema versioning).
+- **HU 15** (Plugin System): implemented. Technical doc at `docs/technical/hu15-plugin-system.md`; plugin author guide at `docs/technical/guides/how-to-create-a-plugin.md`.
+- **HU 14+**: pending — see [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico) for the next planned work items (local deployment, CLI, schema versioning).
 
 Every implementation must follow the **SDD Flow** defined in section 2 of this file. No code may contradict the PRD (`docs/PRD_GymFlow_Lite.md`), the approved RFCs (`docs/RFC_001_Architecture_Offline_Sync.md` and `docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md`), or the ADRs in `docs/architecture/adr/`.
 
@@ -126,7 +127,7 @@ All templates are in `docs/templates/<category>/<name>.md`. **Golden rule**: do 
 - [Changelog](CHANGELOG.md) — versioned history of releases
 - [License](LICENSE) — AGPL v3 full text
 
-### Technical documentation per HU (HU 01-11)
+### Technical documentation per HU (HU 01-15)
 
 - [HU-01: Check-in](docs/technical/hu01-checkin.md)
 - [HU-02: Member Registration](docs/technical/hu02-member-registration.md)
@@ -139,6 +140,9 @@ All templates are in `docs/templates/<category>/<name>.md`. **Golden rule**: do 
 - [HU-09: Anthropometry](docs/technical/hu09-anthropometry.md)
 - [HU-10: Progress Chart](docs/technical/hu10-progress-chart.md)
 - [HU-11: Routines](docs/technical/hu11-routines.md)
+- [HU-12: Metrics Dashboard](docs/technical/hu12-metrics-dashboard.md)
+- [HU-13: CI/CD](docs/technical/hu13-cicd.md)
+- [HU-15: Plugin System](docs/technical/hu15-plugin-system.md)
 
 ### General technical documentation
 
@@ -158,7 +162,11 @@ _None — all 12/12 backlog HUs are implemented and committed. See [RFC-002 road
 ### HU tasks in planning
 
 - **HU-014: Local Deployment** — _pending file creation; tracked in `instructions.md` since 2026-04-13_
-- _HU-015 through HU-017: plugins, CLI, schema versioning — see RFC-002 roadmap_
+- _HU-016-017: CLI, schema versioning — see RFC-002 roadmap_
+
+### Plugin System
+
+- [How to Create a Plugin](docs/technical/guides/how-to-create-a-plugin.md) — Guía para autores de plugins
 
 ### Available templates
 

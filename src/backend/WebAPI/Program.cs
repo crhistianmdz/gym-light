@@ -7,12 +7,14 @@ using GymFlow.Application.UseCases.ExerciseCatalog;
 using GymFlow.Application.UseCases.WorkoutLogs;
 using GymFlow.Application.UseCases;
 using GymFlow.Application.Interfaces;
+using GymFlow.Domain.Entities;
 using GymFlow.Domain.Interfaces;
 using GymFlow.Infrastructure.Persistence;
 using GymFlow.Infrastructure.Persistence.Repositories;
 using GymFlow.Infrastructure.Persistence.Seed;
 using GymFlow.Infrastructure.Services;
 using GymFlow.WebAPI.Extensions;
+using GymFlow.WebAPI.Plugins;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +35,9 @@ builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<IAccessLogRepository, AccessLogRepository>();
 builder.Services.AddScoped<IBodyMeasurementRepository, BodyMeasurementRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPluginRegistryRepository, PluginRegistryRepository>();
+
+builder.Services.AddSingleton<IPluginLoader, PluginLoader>();
 
 // ── Use Cases ─────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<ValidateAccessUseCase>();
@@ -84,6 +89,37 @@ using (var scope = app.Services.CreateScope())
         app.Logger.LogInformation("Migrations applied. Running seed...");
         await ProductSeeder.SeedAsync(db);
         app.Logger.LogInformation("Seed complete.");
+    }
+
+    // ── Plugin Discovery (HU-015) ─────────────────────────────────────────────────────
+    var pluginLoader = scope.ServiceProvider.GetRequiredService<IPluginLoader>();
+    var pluginRegistryRepo = scope.ServiceProvider.GetRequiredService<IPluginRegistryRepository>();
+    var pluginsPath = builder.Configuration["Plugins:Path"] ?? "/plugins";
+
+    app.Logger.LogInformation("Discovering plugins from: {Path}", pluginsPath);
+    var discoveredPlugins = await pluginLoader.DiscoverAsync(pluginsPath);
+
+    foreach (var discovered in discoveredPlugins)
+    {
+        var plugin = PluginRegistry.Create(
+            discovered.Metadata.Id,
+            discovered.Metadata.Name,
+            discovered.Metadata.Version,
+            discovered.Metadata.OfflineCapable);
+        await pluginRegistryRepo.UpsertAsync(plugin, CancellationToken.None);
+        app.Logger.LogInformation("Registered plugin: {Id} v{Version}", plugin.Id, plugin.Version);
+    }
+
+    // Register plugin services for enabled plugins
+    var enabledPlugins = await pluginRegistryRepo.GetEnabledAsync(CancellationToken.None);
+    foreach (var enabledPlugin in enabledPlugins)
+    {
+        var discovered = discoveredPlugins.FirstOrDefault(d => d.Metadata.Id == enabledPlugin.Id);
+        if (discovered != null)
+        {
+            pluginLoader.RegisterServices(builder.Services, discovered.Instance);
+            app.Logger.LogInformation("Enabled plugin services: {Id}", enabledPlugin.Id);
+        }
     }
 }
 
