@@ -194,30 +194,35 @@ La `sync_queue` procesa eventos de tipo: `CheckIn`, `Sale`, `SaleCancel`, `Membe
 
 ### HU-12: Dashboard de Métricas para el Dueño
 
-**Como** dueño o administrador del gimnasio,  
-**quiero** ver un dashboard con ingresos mensuales y tasa de churn,  
+**Como** dueño o administrador del gimnasio,
+**quiero** ver un dashboard con ingresos mensuales y tasa de churn,
 **para** tomar decisiones de negocio basadas en datos reales.
 
 **Criterios de aceptación:**
 
 1. **RBAC**: Solo usuarios con rol `Owner` o `Admin` pueden acceder al dashboard. Otros roles son redirigidos.
 
-2. **Reporte de Ingresos (`GET /api/admin/metrics/income?year={year}`):**
-   - Devuelve desglose mensual de ingresos para el año solicitado
-   - Cada mes contiene: `month` (1-12), `membershipIncome` (decimal), `posIncome` (decimal), `total` (decimal)
+2. **Reporte de Ingresos** _(adaptado — ver discrepancia D1)_:
+   - **Endpoint original**: `GET /api/admin/metrics/income?year={year}`
+   - **Endpoint implementado**: `GET /api/admin/metrics/income?from={from}&to={to}` (rango libre de fechas)
+   - Devuelve desglose mensual de ingresos para el período solicitado
+   - Cada mes contiene: `year` (int), `month` (int 1-12), `membership` (decimal), `pos` (decimal), `total` (decimal)
    - Filtra por `GymId` del usuario autenticado
-   - Si `year` no se especifica, usa el año actual
+   - Si no se especifica rango, usa el año actual (default en la UI)
 
-3. **Reporte de Churn (`GET /api/admin/metrics/churn?year={year}`):**
-   - Devuelve: `year`, `activeMembers`, `churnedMembers`, `churnRate` (porcentaje, 0-100)
-   - **Fórmula ChurnRate**: `(churnedMembers / (activeMembers + churnedMembers)) * 100`
-   - `churnedMembers` = socios que tuvieron membresía activa en el año pero no la renovaron
+3. **Reporte de Churn** _(adaptado — ver discrepancia D3)_:
+   - **Endpoint**: `GET /api/admin/metrics/churn?year={year}`
+   - Devuelve: `year` (int), `totalMembers` (int), `activeMembers` (int), `notRenewed` (int), `churnRate` (porcentaje 0-100)
+   - **Fórmula ChurnRate implementada** _(adaptado — ver discrepancia D4)_: `churnRate = (notRenewed / totalMembers) * 100` con guard `totalMembers > 0`
+   - `notRenewed` (antes `churnedMembers`) = socios que no renovaron al terminar su membresía
+   - `totalMembers` = todos los socios del gimnasio (incluye Active, Frozen, Expired, Cancelled)
    - Si no hay socios, `churnRate = 0` (no dividir por cero)
    - Año mínimo válido: 2020. Año máximo: año actual.
 
-4. **Registro de Pago (`POST /api/payments`):**
+4. **Registro de Pago (`POST /api/payments`)** _(adaptado — ver discrepancia D5)_:
    - Accesible por `Owner`, `Admin`, `Receptionist`
-   - Body: `{ memberId?, amount, category (0=Membership|1=POS), date, description?, clientGuid }`
+   - **Body implementado**: `{ memberId?, amount, category (0=Membership|1=POS), clientGuid, notes?, saleId? }`
+   - **Notas**: el campo `date` original se omite (el servidor asigna `Timestamp = DateTime.UtcNow` automáticamente). El campo `description` original se renombró a `notes`. Se agregó `saleId?` opcional (FK a `Sale` para pagos POS derivados de ventas).
    - Idempotente: si `clientGuid` ya existe, devuelve el pago existente sin reprocesar
    - `amount` debe ser > 0
 
@@ -225,6 +230,22 @@ La `sync_queue` procesa eventos de tipo: `CheckIn`, `Sale`, `SaleCancel`, `Membe
    - El dashboard carga datos desde caché local (IndexedDB) si no hay conexión
    - Se muestra un banner indicando que los datos pueden estar desactualizados
 
-6. **UI:**
+6. **UI** _(adaptado — ver discrepancia D6)_:
    - Ingresos: gráfico de barras agrupado (Membresías en azul, POS en naranja) por mes
-   - Churn: 4 cards con `activeMembers`, `churnedMembers`, `churnRate`, color de alerta si churnRate > 20%
+   - Churn: 4 cards — **Total Socios** (`totalMembers`), **Activos** (`activeMembers`), **No Renovaron** (`notRenewed`), **Churn Rate** (`churnRate` con color de alerta)
+   - Color de alerta en Churn Rate: `success.main` < 10% ≤ `warning.main` < 20% ≤ `error.main`
+
+#### Discrepancias con la implementación real (D1-D6)
+
+La spec del backlog (esta sección) fue ajustada durante la implementación. Estas son las divergencias intencionales documentadas para que la spec y el código queden alineados. La **implementación real es la fuente de verdad** (ver `docs/technical/hu12-metrics-dashboard.md` para el detalle completo).
+
+| # | Spec original (backlog) | Implementación real | Razón / impacto |
+|---|---|---|---|
+| D1 | `GET /api/admin/metrics/income?year={year}` (año completo) | `GET /api/admin/metrics/income?from={from}&to={to}` (rango libre) | Más flexible: permite consultar cualquier período. La UI lo explota con dos `TextField type="date"`. |
+| D2 | `IncomeReportDto` implícito: `month` (1-12), `membershipIncome`, `posIncome`, `total` | `IncomeReportDto { From, To, TotalIncome, ByMonth[]: { Year, Month, Membership, Pos, Total } }` | DTO es **agregado** (no single-month). El frontend desglosa con `BarChart` agrupado por mes. |
+| D3 | `ChurnReportDto { year, activeMembers, churnedMembers, churnRate }` | `ChurnReportDto { year, totalMembers, activeMembers, notRenewed, churnRate }` | Se renombró `churnedMembers → notRenewed` (semánticamente equivalente) y se agregó `totalMembers` (base del cálculo, requerida para D4). |
+| D4 | `churnRate = (churnedMembers / (activeMembers + churnedMembers)) * 100` | `churnRate = (notRenewed / totalMembers) * 100` con guard | El denominador es `totalMembers` (no `activeMembers + notRenewed`) porque `Member` puede estar en otros estados (Frozen, Cancelled). Si se sumaran solo los dos, se sub-reportaría churn. |
+| D5 | `RegisterPaymentRequest { memberId?, amount, category, date, description?, clientGuid }` | `RegisterPaymentRequest { memberId?, amount, category, clientGuid, notes?, saleId? }` | (1) `date` se omite (servidor asigna `Timestamp`). (2) `description` → `notes`. (3) `saleId?` opcional (FK a `Sale` cuando pago viene de venta POS). |
+| D6 | "4 cards con `activeMembers`, `churnedMembers`, `churnRate`, color de alerta si churnRate > 20%" | 4 cards: `Total Socios`, `Activos`, `No Renovaron`, `Churn Rate` | Se agregó la card de `Total Socios` (base del cálculo). Threshold de color: 3 niveles (`success < 10% ≤ warning < 20% ≤ error`). |
+
+> **Próxima acción**: aplicar trabajo de `doc-fix` (work item menor) para limpiar las marcas "(adaptado — ver discrepancia X)" una vez que la spec se considere consolidada. Ver [`docs/technical/hu12-metrics-dashboard.md`](../technical/hu12-metrics-dashboard.md) para la implementación completa.

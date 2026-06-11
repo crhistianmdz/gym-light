@@ -8,14 +8,13 @@
 
 ## 1. Project Status
 
-**GymFlow Lite** is a SaaS management platform for small gyms (10-200 members). It runs online with an offline-first fallback on the frontend.
+**GymFlow Lite** is an **open-source AGPL v3** management platform for small gyms (10-200 members), distributed as **self-hosted** (each customer runs their own instance). It runs online with an offline-first fallback on the frontend.
 
-- **HU 01-11**: implemented (backend + frontend)
-- **HU 12**: metrics dashboard (in implementation)
-- **HU 13**: CI/CD (in implementation, lives at `docs/tasks/HU-001-HU-099/HU-013-cicd.md`)
-- **HU 14+**: pending
+- **HU 01-12**: implemented and committed (backend + frontend + tests). The 12/12 backlog is complete.
+- **HU 13** (CI/CD): implemented. Workflows (`ci.yml`, `release-please.yml`, `security-review.yml`) are in place; technical doc is in `docs/technical/hu13-cicd.md`.
+- **HU 14+**: pending — see [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico) for the next planned work items (plugins opt-in, CLI, schema versioning).
 
-Every implementation must follow the **SDD Flow** defined in section 2 of this file. No code may contradict the PRD (`docs/PRD_GymFlow_Lite.md`) or the approved RFC (`docs/RFC_001_Architecture_Offline_Sync.md`).
+Every implementation must follow the **SDD Flow** defined in section 2 of this file. No code may contradict the PRD (`docs/PRD_GymFlow_Lite.md`), the approved RFCs (`docs/RFC_001_Architecture_Offline_Sync.md` and `docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md`), or the ADRs in `docs/architecture/adr/`.
 
 ### Documentation architecture
 
@@ -115,12 +114,17 @@ All templates are in `docs/templates/<category>/<name>.md`. **Golden rule**: do 
 - [ADR-003: Database Migration Strategy](docs/architecture/adr/003-estrategia-migraciones.md)
 - [ADR-004: Documentation Structure (FlowDocs)](docs/architecture/adr/004-estructura-documentacion-flowdocs.md)
 - [ADR-005: Naming Conventions](docs/architecture/adr/005-convenciones-naming.md)
+- [ADR-006: AGPL v3 License](docs/architecture/adr/006-licencia-agpl-v3.md) — strategic
+- [ADR-007: Self-Hosted vs SaaS](docs/architecture/adr/007-modelo-self-hosted.md) — strategic
 
 ### Main documentation
 
 - [Product PRD](docs/PRD_GymFlow_Lite.md) — business rules and scope
-- [RFC-001: Architecture Offline Sync](docs/RFC_001_Architecture_Offline_Sync.md) — approved architectural decisions
+- [RFC-001: Architecture Offline Sync](docs/RFC_001_Architecture_Offline_Sync.md) — approved architectural decision (technical)
+- [RFC-002: Business Model and Governance](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md) — approved strategic decision (license, distribution, monetization, governance, roadmap)
 - [Consolidated User Stories](docs/tasks/User_Stories_GymFlow.md) — acceptance criteria per HU
+- [Changelog](CHANGELOG.md) — versioned history of releases
+- [License](LICENSE) — AGPL v3 full text
 
 ### Technical documentation per HU (HU 01-11)
 
@@ -149,7 +153,12 @@ All templates are in `docs/templates/<category>/<name>.md`. **Golden rule**: do 
 
 ### HUs in implementation
 
-- [HU-013: CI/CD](docs/tasks/HU-001-HU-099/HU-013-cicd.md)
+_None — all 12/12 backlog HUs are implemented and committed. See [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico) for the next planned work items (HU-014 onward)._
+
+### HU tasks in planning
+
+- **HU-014: Local Deployment** — _pending file creation; tracked in `instructions.md` since 2026-04-13_
+- _HU-015 through HU-017: plugins, CLI, schema versioning — see RFC-002 roadmap_
 
 ### Available templates
 
@@ -211,10 +220,12 @@ git diff --stat
 - **Conventions first**: Conventions > Code. If a rule is in this file or in an ADR, it is law.
 - **Trust the ADRs**: When in doubt about a technical choice, read the relevant ADR. Do not reinvent the decision.
 - **Trust the PRD**: When in doubt about a business rule, read the PRD. Do not guess.
+- **Trust the RFCs**: When in doubt about distribution, monetization, governance, or roadmap, read RFC-001 and RFC-002.
 - **Conventional commits**: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `perf:`. Never add AI attribution.
+- **License**: All contributions are accepted under the project's [AGPL v3 license](LICENSE). By contributing, you agree to this.
 
 ---
 
-**Version**: 1.3 (minimal: business rules in PRD, decisions in ADRs, only operational rules here)
-**Last updated**: 2026-06-09
-**Maintenance**: This file is updated only when operational rules change. Business rules go in the PRD. Decisions go in ADRs.
+**Version**: 1.4 (minimal: business rules in PRD, decisions in ADRs, only operational rules here)
+**Last updated**: 2026-06-10
+**Maintenance**: This file is updated only when operational rules change. Business rules go in the PRD. Decisions go in ADRs. Distribution / monetization / governance go in RFCs.
