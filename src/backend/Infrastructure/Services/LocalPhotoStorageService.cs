@@ -18,7 +18,8 @@ public class LocalPhotoStorageService : IPhotoStorageService
     /// <param name="webRootPath">IWebHostEnvironment.WebRootPath — inyectado desde Program.cs</param>
     public LocalPhotoStorageService(string webRootPath)
     {
-        _photosDirectory = Path.Combine(webRootPath, "photos");
+        var root = string.IsNullOrEmpty(webRootPath) ? "/app/wwwroot" : webRootPath;
+        _photosDirectory = Path.Combine(root, "photos");
         _publicBasePath = "/photos";
 
         Directory.CreateDirectory(_photosDirectory);

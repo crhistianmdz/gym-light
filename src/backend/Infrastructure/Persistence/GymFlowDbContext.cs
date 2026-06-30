@@ -29,6 +29,7 @@ public class GymFlowDbContext : DbContext
 public DbSet<RoutineExercise> RoutineExercises { get; set; }
     public DbSet<RoutineAssignment> RoutineAssignments { get; set; }
     public DbSet<ExerciseCatalog> ExerciseCatalogs { get; set; }
+    public DbSet<SchemaVersion> SchemaVersions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -239,6 +240,24 @@ public DbSet<RoutineExercise> RoutineExercises { get; set; }
             e.Property(p => p.Enabled).IsRequired();
             e.Property(p => p.InstalledAt).IsRequired();
             e.Property(p => p.LastUpdated).IsRequired();
+        });
+
+        // ── SchemaVersion (HU-017) ──────────────────────────────────────────────────────
+        modelBuilder.Entity<SchemaVersion>(e =>
+        {
+            e.ToTable("schema_version");
+            e.HasKey(sv => sv.Version);
+            e.Property(sv => sv.Version).IsRequired().HasMaxLength(50);
+            e.Property(sv => sv.ModuleName).IsRequired().HasMaxLength(200);
+            e.Property(sv => sv.AppliedAt).IsRequired();
+            e.Property(sv => sv.AppliedBy).IsRequired().HasMaxLength(256);
+            e.Property(sv => sv.Description).HasMaxLength(500);
+            e.Property(sv => sv.MigrationHash).IsRequired().HasMaxLength(128);
+            e.Property(sv => sv.RollbackSql).HasColumnType("text");
+
+            // Índices para consultas comunes
+            e.HasIndex(sv => sv.ModuleName).HasDatabaseName("IX_schema_version_module_name");
+            e.HasIndex(sv => sv.AppliedAt).HasDatabaseName("IX_schema_version_applied_at");
         });
     }
 

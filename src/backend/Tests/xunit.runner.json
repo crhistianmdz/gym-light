@@ -1,0 +1,9 @@
+{
+  "$schema": "https://xunit.net/xunit.runner.schema.json",
+  "parallelizeTestCollections": false,
+  "maxParallelThreads": 1,
+  "messageSink": {
+    "diagnosticMessagesForFailedTests": true
+  },
+  "appDomain": "ifAvailable"
+}

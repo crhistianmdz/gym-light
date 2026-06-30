@@ -38,7 +38,7 @@ public static class ProductSeeder
         if (!await context.AppUsers.AnyAsync(ct))
         {
             // Password: admin123 (BCrypt hash for "admin123")
-            const string passwordHash = "$2a$11$OvXHWz9E4T2CQvV3B5X3EOZ8Z6ZQZ1Z2Z3Z4Z5Z6Z7Z8Z9Z0Z1Z2Z3Z";
+            const string passwordHash = "$2a$11$ZtUu3YHm.U.E4LBvkARCWe8S7KSEkluRcvF7PK/6D3e1oN6nNesgi";
             
             var admin = AppUser.Create(
                 "admin@demo.com",

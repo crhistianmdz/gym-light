@@ -37,6 +37,9 @@ jobs:
         working-directory: src/frontend
         run: npm ci
 
+      - name: Lint migration policy
+        run: python3 scripts/check-migration-policy.py src/backend/Infrastructure/Persistence/Migrations/
+
       - name: Lint frontend
         working-directory: src/frontend
         run: npm run lint

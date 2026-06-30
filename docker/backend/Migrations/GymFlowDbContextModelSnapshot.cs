@@ -545,6 +545,49 @@ namespace GymFlow.WebAPI.Migrations
                     b.ToTable("SaleLines");
                 });
 
+            modelBuilder.Entity("GymFlow.Domain.Entities.SchemaVersion", b =>
+                {
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ModuleName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("AppliedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AppliedBy")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("MigrationHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("RollbackSql")
+                        .HasColumnType("text");
+
+                    b.HasKey("Version");
+
+                    b.HasIndex("ModuleName")
+                        .HasDatabaseName("IX_schema_version_module_name");
+
+                    b.HasIndex("AppliedAt")
+                        .HasDatabaseName("IX_schema_version_applied_at");
+
+                    b.ToTable("schema_version");
+                });
+
             modelBuilder.Entity("GymFlow.Domain.Entities.WorkoutExerciseEntry", b =>
                 {
                     b.Property<Guid>("Id")

@@ -1,8 +1,9 @@
 # HU-017: Schema Versioning + Migraciones Aditivas
 
-**Status**: 🟡 In Progress
+**Status**: ✅ Complete
 **Owner**: @gymflow-tech-lead
 **Created**: 2026-06-10
+**Completed**: 2026-06-11
 **Priority**: Must
 **Estimación**: L
 

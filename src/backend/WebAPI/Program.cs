@@ -13,6 +13,11 @@ using GymFlow.Infrastructure.Persistence;
 using GymFlow.Infrastructure.Persistence.Repositories;
 using GymFlow.Infrastructure.Persistence.Seed;
 using GymFlow.Infrastructure.Services;
+using GymFlow.Application.UseCases.Schema;
+using GymFlow.Domain.Interfaces;
+using GymFlow.Infrastructure.Persistence.Repositories;
+using GymFlow.Infrastructure.Persistence.Services;
+using GymFlow.Infrastructure.Services;
 using GymFlow.WebAPI.Extensions;
 using GymFlow.WebAPI.Plugins;
 using Microsoft.EntityFrameworkCore;
@@ -36,8 +41,40 @@ builder.Services.AddScoped<IAccessLogRepository, AccessLogRepository>();
 builder.Services.AddScoped<IBodyMeasurementRepository, BodyMeasurementRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPluginRegistryRepository, PluginRegistryRepository>();
+builder.Services.AddScoped<GymFlow.WebAPI.Filters.IdempotencyFilter>();
 
 builder.Services.AddSingleton<IPluginLoader, PluginLoader>();
+
+// ── Schema Versioning (HU-017) ───────────────────────────────────────────────
+builder.Services.AddScoped<ISchemaVersionRepository, SchemaVersionRepository>();
+builder.Services.AddSingleton<ISchemaMetadata>(sp =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    return new SchemaMetadataService(connectionString);
+});
+
+// Schema infrastructure services (direct construction with connection string)
+builder.Services.AddSingleton<ISchemaLock>(sp =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+    return new SchemaLock(connectionString);
+});
+
+builder.Services.AddSingleton<BackupHelper>(sp =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+    return new BackupHelper(connectionString);
+});
+
+builder.Services.AddScoped<IMigrationExecutor, EfCoreMigrationExecutor>();
+builder.Services.AddSingleton<MigrationPolicy>();
+builder.Services.AddScoped<SchemaUpgrader>();
+
+// Schema use cases
+builder.Services.AddScoped<UpgradeSchemaUseCase>();
+builder.Services.AddScoped<GetSchemaStatusUseCase>();
+builder.Services.AddScoped<ValidateSchemaUseCase>();
 
 // ── Use Cases ─────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<ValidateAccessUseCase>();

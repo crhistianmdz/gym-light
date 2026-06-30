@@ -10,6 +10,7 @@ RUN dotnet restore GymFlow.WebAPI.csproj
 COPY src/backend/Domain/       ./Domain/
 COPY src/backend/Application/  ./Application/
 COPY src/backend/Infrastructure/ ./Infrastructure/
+COPY src/backend/Plugins/      ./Plugins/
 COPY src/backend/WebAPI/       ./WebAPI/
 
 # Publish

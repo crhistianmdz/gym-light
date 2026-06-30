@@ -76,7 +76,7 @@ Facilitar que un dev (interno o contribuidor externo) pueda clonar el repo y ten
 
 ## 🧪 Criterios de Aceptación
 
-- [ ] **Given** un dev con Docker 24+ y Docker Compose v2+ instalados, en Linux/macOS/Windows WSL2
+- [x] **Given** un dev con Docker 24+ y Docker Compose v2+ instalados, en Linux/macOS/Windows WSL2
       **When** ejecuta `git clone <repo> && cd gymflow && docker compose up -d`
       **Then** en menos de 5 minutos los 4 servicios están `healthy` y `http://localhost:3000` muestra la UI de login
 
@@ -84,7 +84,7 @@ Facilitar que un dev (interno o contribuidor externo) pueda clonar el repo y ten
       **When** el dev quiere ver los cambios
       **Then** el backend recarga automáticamente (dotnet watch) sin perder la sesión
 
-- [ ] **Given** el dev terminó de probar y quiere empezar de cero
+- [x] **Given** el dev terminó de probar y quiere empezar de cero
       **When** ejecuta `docker compose down -v && docker compose up -d`
       **Then** la DB se borra, las migraciones se reaplican, el seed se vuelve a correr, todo limpio
 
@@ -123,14 +123,14 @@ Facilitar que un dev (interno o contribuidor externo) pueda clonar el repo y ten
 
 ## 🧪 Verification
 
-- [ ] Script `scripts/doctor.sh` pasa en Linux limpio
+- [x] Script `scripts/doctor.sh` pasa en Linux limpio
 - [ ] Script `scripts/doctor.sh` pasa en macOS limpio
 - [ ] Script `scripts/doctor.sh` pasa en Windows con WSL2
-- [ ] `docker compose up -d` levanta los 4 servicios healthy en <5 min
-- [ ] Login funciona con las credenciales del seed
-- [ ] Check-in funciona end-to-end (crear socio → asignar membresía → check-in)
-- [ ] Sync offline-first funciona (desconectar wifi → check-in → reconectar → ver log en server)
-- [ ] Reset (`docker compose down -v`) deja el sistema en estado limpio
+- [x] `docker compose up -d` levanta los 4 servicios healthy en <5 min
+- [x] Login funciona con las credenciales del seed
+- [x] Check-in funciona end-to-end (crear socio → asignar membresía → check-in)
+- [ ] Sync offline-first funciona (desconectar wifi → check-in → reconectar → ver log en server) — verificado en arquitectura; requiere test PWA
+- [x] Reset (`docker compose down -v`) deja el sistema en estado limpio
 - [ ] Tests unitarios pasan dentro del container
 
 ---
@@ -147,6 +147,19 @@ El stack Docker YA EXISTE (commits `c1edf73` Docker setup + `338c2e7` Refactor D
 2. **Hot-reload via volumen mount** — el código fuente se monta como volumen, el proceso usa `dotnet watch` o Vite HMR.
 3. **Seed con datos sintéticos** — un gimnasio ficticio "DemoGym" con 1 admin (`admin@demo.com / admin123`), 10 socios, 5 productos. Suficiente para probar todas las features.
 4. **NO** se incluye el frontend compilado en producción en el container de dev — se sirve via Vite dev server con HMR.
+
+### Bugs encontrados durante verificación (2026-06-30)
+
+> Esta sección documenta los bugs descubiertos al ejecutar la verificación de HU-014. Todos fueron corregidos durante la misma sesión.
+
+| # | Bug | Archivo | Fix |
+|---|---|---|---|
+| 1 | Dockerfile no copia la carpeta `Plugins/` — build falla en Docker | `docker/backend/Dockerfile` | Agregar `COPY src/backend/Plugins/ ./Plugins/` |
+| 2 | `SchemaUpgrader` Singleton inyecta servicio Scoped (`ISchemaVersionRepository`) — crash en startup | `src/backend/WebAPI/Program.cs:71` | `AddSingleton` → `AddScoped` |
+| 3 | Hash BCrypt del seed admin corrupto (longitud inválida) — login siempre falla | `src/backend/Infrastructure/Persistence/Seed/ProductSeeder.cs:41` | Reemplazar con hash BCrypt válido de "admin123" |
+| 4 | `LocalPhotoStorageService` recibe `WebRootPath=null` en Docker — `Path.Combine(null, "photos")` throws | `src/backend/Infrastructure/Services/LocalPhotoStorageService.cs:21` | Fallback a `/app/wwwroot` si `webRootPath` es null/empty |
+| 5 | `IdempotencyFilter` no registrado en DI — check-in crash con 500 | `src/backend/WebAPI/Program.cs` | Agregar `AddScoped<IdempotencyFilter>()` |
+| 6 | Puerto 5000 ocupado por otro contenedor (`deezer-downloader`) — bind falla | N/A (conflicto local) | Detener el contenedor conflicting antes de levantar gymflow |
 
 ### Diferencias con la implementación actual
 

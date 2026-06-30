@@ -1,12 +1,49 @@
 # HU-016: CLI + Installer
 
-**Status**: 🟡 In Progress
+**Status**: 🟡 In Progress (implementación base completa)
 **Owner**: @gymflow-tech-lead
 **Created**: 2026-06-10
+**Updated**: 2026-06-11
 **Priority**: Should
 **Estimación**: XL
 
 > **HU que cierra el modelo self-hosted.** Es la interfaz de operador del sistema. Sin CLI, el operador no tiene forma de instalar, upgrade, ni diagnosticar el sistema. Complementa [HU-014 Despliegue local](docs/tasks/HU-001-HU-099/HU-014-despliegue-local.md) y consume [HU-017 Schema versioning](docs/tasks/HU-001-HU-099/HU-017-schema-versioning.md) + [HU-015 Sistema de módulos](docs/tasks/HU-001-HU-099/HU-015-sistema-de-modulos.md).
+
+## 📦 Implementation Status
+
+### Implemented (2026-06-11)
+- ✅ `src/cli/GymFlow.Cli/` — Proyecto .NET 8
+- ✅ `gymflow install` — Stub con generadores
+- ✅ `gymflow status` — Funcional
+- ✅ `gymflow doctor` — Checks Docker/PostgreSQL/Redis
+- ✅ `gymflow module list` — Lista hardcoded
+- ✅ `gymflow serve` — Wrapper Docker Compose
+- ✅ `gymflow backup` — Stub pg_dump
+- ✅ `gymflow restore` — Stub psql
+- ⚠️ `gymflow upgrade` — **Stub (requiere HU-017)**
+- ⚠️ `gymflow module enable|disable` — **Stub (requiere HU-015)**
+
+### Code Location
+```
+src/cli/
+├── GymFlow.Cli.sln
+└── GymFlow.Cli/
+    ├── GymFlow.Cli.csproj
+    ├── Program.cs
+    └── Commands/
+        ├── InstallCommand.cs
+        ├── UpgradeCommand.cs      ← Stub (HU-017 pending)
+        ├── StatusCommand.cs
+        ├── DoctorCommand.cs
+        ├── ModuleCommand.cs   ← Stub (HU-015 pending)
+        ├── ServeCommand.cs
+        ├── BackupCommand.cs
+        ├── RestoreCommand.cs
+        └── Helpers/
+            ├── DockerComposeGenerator.cs
+            ├── EnvironmentGenerator.cs
+            └── PrerequisitesChecker.cs
+```
 
 ---
 

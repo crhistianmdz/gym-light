@@ -102,6 +102,24 @@ CI/CD aplica migraciones antes del deploy.
 - [ ] Sí — Requiere migration de datos
 - [ ] No — Aditivo o backwards compatible
 
+### Política de Migración Aditiva (ADR-007, HU-017)
+
+**Regla obligatoria**: todas las migraciones deben ser estrictamente aditivas. No se permite eliminar ni modificar destructivamente datos existentes.
+
+| Operación | Permitida | Alternativa si está bloqueada |
+|---|---|---|
+| `AddColumn` | ✅ | — |
+| `CreateTable` | ✅ | — |
+| `CreateIndex` | ✅ | — |
+| `AlterColumn` (aumentar maxLength, hacer nullable) | ✅ | — |
+| `DropColumn` | ❌ | Marcar como `[Obsolete]`, eliminar en próxima versión mayor |
+| `RenameColumn` | ❌ | Agregar nueva columna, migrar datos, deprecar la anterior |
+| `AlterColumn` (cambio de tipo) | ❌ | Nueva columna con el tipo deseado + migración de datos |
+| `AlterColumn` (reducir maxLength) | ❌ | Truncar solo con migración explícita aprobada |
+| `AlterColumn` (agregar maxLength donde era null) | ❌ | Validar datos existentes antes de aplicar restricción |
+
+**Validación**: ejecutar `python3 scripts/check-migration-policy.py src/backend/Infrastructure/Persistence/Migrations/` antes de commitear. El CI rechaza automáticamente PRs con violaciones.
+
 ### Plan de Migración de Datos (si breaking)
 
 ```sql
