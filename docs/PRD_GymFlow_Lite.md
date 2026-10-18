@@ -75,9 +75,9 @@ GymFlow Lite es una **plataforma de gestión open-source AGPL v3** para **gimnas
 
 ### Fase 3: Distribución y Ecosistema ⏳ EN PROGRESO (ver RFC-002)
 
-- ⏳ **Sistema de plugins opt-in** (HU-015 planeada)
-- ⏳ **CLI de GymFlow** (HU-016 planeada)
-- ⏳ **Schema versioning + migraciones aditivas** (HU-017 planeada)
+- 🟡 **Sistema de plugins opt-in** (HU-015 — núcleo implementado)
+- 🟡 **CLI de GymFlow** (HU-016 — implementación base; `upgrade`/módulos pendientes)
+- ✅ **Schema versioning + migraciones aditivas** (HU-017 — completada 2026-06-11)
 - ⏳ Demo online público
 - ⏳ Documentación de instalación y upgrade
 - ⏳ GitHub Sponsors + OpenCollective activados
@@ -128,7 +128,7 @@ Ver [RFC-002 §6](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-
 
 ---
 
-## 8. Status actual del proyecto (a 2026-06-10)
+## 8. Status actual del proyecto (a 2026-10-18)
 
 - ✅ **12/12 HUs del backlog original implementadas y commiteadas** (HU-01 a HU-12).
 - ✅ **HU-13 (CI/CD) cerrada** con 3 workflows + docs técnica.
@@ -138,7 +138,7 @@ Ver [RFC-002 §6](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-
 - ✅ **LICENSE file con AGPL v3** completo.
 - ✅ **13 docs técnicas de HU** + 8 docs técnicas generales.
 - ✅ **FlowDocs framework** (12 templates) implementado.
-- ⏳ **Fase 3 (distribución y ecosistema)** en planificación — ver [RFC-002 §6](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico).
+- ⏳ **Fase 3 (distribución y ecosistema)** en progreso — ver [RFC-002 §6](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico).
 
 **Métrica principal de éxito**: el proyecto sigue siendo **divertido de mantener** + **útil para alguien**. Las métricas de stars/downloads/donaciones son **oportunistas**, no objetivo.
 

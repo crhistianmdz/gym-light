@@ -1,9 +1,10 @@
 # Estado de Implementación — GymFlow Lite
 
-> Última actualización: 2026-04-13
+> Última actualización: 2026-10-18
 
 ## Leyenda
 - ✅ Completo
+- 🟡 En progreso (implementación base; cierre formal pendiente)
 - ⚠️ Parcial (detalle en notas)
 - ❌ Pendiente
 
@@ -23,11 +24,16 @@
 | 10  | Visualización de Progreso     | ✅      | ✅       | ✅    | Completa |       |
 | 11  | Asignación de Rutinas         | ✅      | ✅       | ✅    | Completa |       |
 | 12  | Dashboard de Métricas         | ✅      | ✅       | ✅    | Completa |       |
+| 13  | CI/CD                         | —       | —        | —    | Completa | Workflows `ci.yml`, `release-please.yml`, `security-review.yml`; `docs/technical/hu13-cicd.md`. |
+| 14  | Despliegue Local              | —       | —        | —    | Completa (2026-06-11) | Commit `fd5e165`; spec ✅ Completed. |
+| 17  | Schema Versioning             | —       | —        | —    | Completa (2026-06-11) | Commit `940a0ea`; spec ✅. |
 
 ## HUs pendientes
 
-| HU  | Nombre                        | Prioridad PRD |
-|-----|-------------------------------|---------------|
+| HU  | Nombre                        | Prioridad PRD | Notas |
+|-----|-------------------------------|---------------|-------|
+| 15  | Módulos / Plugins             | —             | 🟡 Núcleo implementado; cierre formal pendiente. |
+| 16  | CLI + Installer               | —             | 🟡 Implementación base; pendientes `gymflow upgrade` (stub) y `gymflow module enable\|disable` (stub). |
 
 ## Fixes recientes
 

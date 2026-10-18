@@ -11,14 +11,14 @@
 
 ## [Unreleased]
 
-### En progreso (Fase C del roadmap — ver RFC-002)
-- HU-014: Despliegue local (cierre del pendiente abandonado)
-- HU-016: CLI de GymFlow (`install`, `upgrade`, `backup`, `doctor`)
-- HU-017: Schema versioning + migraciones aditivas
-- ADR-008: Sistema de módulos opt-in (arquitectura)
-
 ### Added
-- **HU-015: Sistema de plugins opt-in** — arquitectura extensible con IPlugin interface, PluginLoader para descubrimiento en runtime, PluginRegistry en PostgreSQL para estado enabled/disabled, 3 plugins base (Anthropometry, Routines, Sales), admin API (`/api/plugins`) y UI en `/admin/plugins`
+- **HU-014: Despliegue local** — completada el 2026-06-11 (pendiente de release)
+- **HU-015: Sistema de plugins opt-in** — arquitectura extensible con IPlugin interface, PluginLoader para descubrimiento en runtime, PluginRegistry en PostgreSQL para estado enabled/disabled, 3 plugins base (Anthropometry, Routines, Sales), admin API (`/api/plugins`) y UI en `/admin/plugins` — núcleo implementado; cierre formal pendiente
+- **HU-017: Schema versioning + migraciones aditivas** — completada el 2026-06-11 (pendiente de release)
+
+### En progreso (Fase C del roadmap — ver RFC-002)
+- **HU-016: CLI de GymFlow** — implementación base (comandos `install`, `backup`, `doctor`); pendientes: `upgrade` y `module enable|disable` (stubs)
+- **ADR-008: Sistema de módulos opt-in** (arquitectura)
 
 ---
 

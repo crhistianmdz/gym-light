@@ -226,7 +226,7 @@ refactor:, docs:, test:, chore:       → sin bump (aparecen en changelog)
 1. **Cerrar gap D1 (linter C#)** — Agregar `dotnet format src/backend --verify-no-changes --no-restore` como step en `ci.yml` después del build del backend. Trabajo: 1 PR de 5 líneas.
 2. **Cerrar gap D2 (security-review en develop)** — Agregar `develop` al array `branches` en `security-review.yml`. Trabajo: 1 PR de 2 líneas.
 3. **Validar la branch protection real** — Una vez aplicadas las reglas en GitHub UI, verificar con un PR de prueba que los checks se ejecutan y el merge se bloquea cuando fallan.
-4. **HU-14 — Despliegue local** — Hay un task abandonado en `instructions.md` (creado el 2026-04-13) que pide el archivo `docs/tasks/HU14-despliegue_local.md`. Nunca se creó. **Work item huérfano, prioridad sugerida: media** (necesario para validar el stack completo en local antes de CI/CD).
+4. **HU-14 — Despliegue local** — ✅ **Completada (2026-06-11)**: el work item se materializó en `docs/tasks/HU-001-HU-099/HU-014-despliegue-local.md` (commit `fd5e165`). Ya no es trabajo pendiente; se conserva aquí como referencia histórica.
 5. **Cache de NuGet** — `ci.yml` no tiene `cache` para NuGet (solo para npm). Agregar `actions/cache@v4` con key `nuget-${{ hashFiles('**/*.csproj') }}` reduciría el tiempo de CI en ~30s.
 6. **Matriz de OS** — Solo se testea en `ubuntu-latest`. Si se necesita soporte Windows/macOS, expandir a `runs-on: ${{ matrix.os }}` con `[ubuntu-latest, windows-latest, macos-latest]`.
 

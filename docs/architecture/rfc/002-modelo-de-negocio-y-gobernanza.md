@@ -215,15 +215,17 @@ El roadmap está dividido en **3 horizontes temporales** con foco diferente:
 
 | Initiative | Prioridad | Estado |
 |---|---|---|
-| Sistema de plugins opt-in (HU-015) | 🔴 Alta | ✅ Implementado |
-| CLI de GymFlow: install, upgrade, backup, doctor (HU-016) | 🔴 Alta | Pendiente |
-| Schema versioning + migraciones aditivas (HU-017) | 🔴 Alta | Pendiente |
+| Sistema de plugins opt-in (HU-015) | 🔴 Alta | 🟡 En progreso (núcleo implementado) |
+| CLI de GymFlow: install, upgrade, backup, doctor (HU-016) | 🔴 Alta | 🟡 En progreso (implementación base) |
+| Schema versioning + migraciones aditivas (HU-017) | 🔴 Alta | ✅ Completado (2026-06-11) |
 | Installer one-liner (Docker Compose pulido) | 🔴 Alta | Pendiente |
-| CHANGELOG.md con v1.0.0 | 🟡 Media | Pendiente |
+| CHANGELOG.md con v1.0.0 | 🟡 Media | ✅ Completado (2026-06-10) |
 | Demo online público | 🟡 Media | Pendiente |
 | Documentación de instalación (paso a paso) | 🟡 Media | Pendiente |
 | Documentación de upgrade (versión a versión) | 🟡 Media | Pendiente |
 | GitHub Sponsors + OpenCollective activados | 🟢 Baja | Pendiente |
+
+> _Estado actualizado: 2026-10-18._
 
 **Criterio de éxito del Horizonte 1**: una persona no técnica puede seguir un tutorial de 30 minutos y tener GymFlow corriendo.
 

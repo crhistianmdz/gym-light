@@ -12,8 +12,12 @@
 
 - **HU 01-12**: implemented and committed (backend + frontend + tests). The 12/12 backlog is complete.
 - **HU 13** (CI/CD): implemented. Workflows (`ci.yml`, `release-please.yml`, `security-review.yml`) are in place; technical doc is in `docs/technical/hu13-cicd.md`.
-- **HU 15** (Plugin System): implemented. Technical doc at `docs/technical/hu15-plugin-system.md`; plugin author guide at `docs/technical/guides/how-to-create-a-plugin.md`.
-- **HU 14+**: pending — see [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico) for the next planned work items (local deployment, CLI, schema versioning).
+- **HU 14** (Local Deployment): completed 2026-06-11. Spec at `docs/tasks/HU-001-HU-099/HU-014-despliegue-local.md`.
+- **HU 15** (Plugin System / modules): core implemented; formal closure in progress. Technical doc at `docs/technical/hu15-plugin-system.md`; plugin author guide at `docs/technical/guides/how-to-create-a-plugin.md`.
+- **HU 16** (CLI + Installer): in progress — base implementation complete; `gymflow upgrade` and `gymflow module enable|disable` are still stubs (pending HU-017 and HU-015 respectively). Spec at `docs/tasks/HU-001-HU-099/HU-016-cli-installer.md`.
+- **HU 17** (Schema Versioning): completed 2026-06-11. Spec at `docs/tasks/HU-001-HU-099/HU-017-schema-versioning.md`.
+
+Phase C (HU-014/015/016/017) is committed on `main` but **not yet released** (no tag or GitHub Release; it is still under `[Unreleased]` in the changelog). Remaining Horizonte 1 items have no HU number yet — see [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico).
 
 Every implementation must follow the **SDD Flow** defined in section 2 of this file. No code may contradict the PRD (`docs/PRD_GymFlow_Lite.md`), the approved RFCs (`docs/RFC_001_Architecture_Offline_Sync.md` and `docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md`), or the ADRs in `docs/architecture/adr/`.
 
@@ -157,12 +161,12 @@ All templates are in `docs/templates/<category>/<name>.md`. **Golden rule**: do 
 
 ### HUs in implementation
 
-_None — all 12/12 backlog HUs are implemented and committed. See [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico) for the next planned work items (HU-014 onward)._
+- **HU-015: Plugin System / modules** — _in progress: core implemented, formal closure pending_. Spec: [HU-015-sistema-de-modulos.md](docs/tasks/HU-001-HU-099/HU-015-sistema-de-modulos.md)
+- **HU-016: CLI + Installer** — _in progress: base implementation complete; `gymflow upgrade` (pending HU-017) and `gymflow module enable|disable` (pending HU-015) are stubs_. Spec: [HU-016-cli-installer.md](docs/tasks/HU-001-HU-099/HU-016-cli-installer.md)
 
 ### HU tasks in planning
 
-- **HU-014: Local Deployment** — _pending file creation; tracked in `instructions.md` since 2026-04-13_
-- _HU-016-017: CLI, schema versioning — see RFC-002 roadmap_
+_None — there are no new numbered HUs. The next Horizonte 1 items have no HU number yet (installer one-liner, online demo, install and upgrade docs, GitHub Sponsors/OpenCollective) — see [RFC-002 roadmap](docs/architecture/rfc/002-modelo-de-negocio-y-gobernanza.md#6-roadmap-estratégico) §6.1._
 
 ### Plugin System
 
@@ -234,6 +238,6 @@ git diff --stat
 
 ---
 
-**Version**: 1.4 (minimal: business rules in PRD, decisions in ADRs, only operational rules here)
-**Last updated**: 2026-06-10
+**Version**: 1.5 (minimal: business rules in PRD, decisions in ADRs, only operational rules here)
+**Last updated**: 2026-10-18
 **Maintenance**: This file is updated only when operational rules change. Business rules go in the PRD. Decisions go in ADRs. Distribution / monetization / governance go in RFCs.
